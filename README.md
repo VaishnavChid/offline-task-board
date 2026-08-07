@@ -101,6 +101,8 @@ Open `OfflineTaskBoard.xcodeproj` in Xcode, select an iOS 26 simulator, and run.
 - Background sync via `BGTaskScheduler`.
 - Retry backoff for repeatedly-failing syncs (currently a failed task just waits for the next manual sync, with no escalating delay).
 - Authentication and per-user data.
+- Polish on the app icon and other in-app iconography — the current icon is a quickly generated gradient-and-checkmark placeholder, not a designed mark.
+- A smarter "Synced" badge: since every edit now syncs immediately while online, a task reads "Synced" almost all the time when connected, which doesn't tell the user much — the badge is genuinely useful for distinguishing pending/failed from synced while offline, less so as a constant, static label while online. Showing it only when it's informative (offline, pending, failed, or briefly right after a sync completes) rather than as a permanent per-card fixture would be a better use of that space.
 
 ## Assumptions
 
