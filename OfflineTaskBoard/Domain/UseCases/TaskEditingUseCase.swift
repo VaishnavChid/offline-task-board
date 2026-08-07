@@ -18,10 +18,14 @@ enum TaskValidationError: LocalizedError {
 }
 
 /// Every mutation a user can make to a task: create, edit, delete (soft), restore (undo),
-/// move between columns, and reorder within a column. Grouped into one type rather than one
-/// class per verb — a single board entity doesn't have enough distinct business logic per
-/// action to justify eight separate classes, and every one of these does the same three things
-/// (validate, stamp `updatedAt`, mark `.pendingUpload`/`.pendingDelete`) before persisting.
+/// change status, and reorder. Grouped into one type rather than one class per verb — a single
+/// board entity doesn't have enough distinct business logic per action to justify separate
+/// classes, and every one of these does the same three things (validate, stamp `updatedAt`, mark
+/// `.pendingUpload`/`.pendingDelete`) before persisting.
+///
+/// `sortOrder` is a single global ordering across every task regardless of status — the board is
+/// one list, not per-status columns, so status only changes which icon/badge a card shows, never
+/// where it sits in that list.
 @MainActor
 final class TaskEditingUseCase {
     private let repository: TaskRepository
@@ -42,7 +46,7 @@ final class TaskEditingUseCase {
             title: trimmedTitle,
             notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
             status: status,
-            sortOrder: try nextSortOrder(in: status)
+            sortOrder: try nextSortOrder()
         )
         try repository.upsert(task)
         return task
@@ -83,50 +87,38 @@ final class TaskEditingUseCase {
         return restored
     }
 
-    /// Menu-driven move (no explicit target position): appends to the end of the destination
-    /// column. Drag-and-drop uses `placeTask` instead, which controls exact position.
+    /// Changes status only — position in the global list is untouched. Since the board is one
+    /// flat list rather than per-status columns, moving to a different status shouldn't make a
+    /// task jump to a different spot in it.
     @discardableResult
     func moveTask(_ task: TaskItem, to status: TaskStatus) throws -> TaskItem {
         guard task.status != status else { return task }
         var moved = task
         moved.status = status
-        moved.sortOrder = try nextSortOrder(in: status)
         moved.updatedAt = .now
         moved.syncStatus = .pendingUpload
         try repository.upsert(moved)
         return moved
     }
 
-    /// Drag-and-drop move + reorder in one operation: places `task` into `status` at the
-    /// position implied by `orderedIDs` (the desired final order of that column, including
-    /// `task.id`), and reassigns sequential `sortOrder` to every task named in it. Handles a
-    /// same-column reorder just as well as a cross-column move — the caller doesn't need to
-    /// know which one it's doing.
-    func placeTask(_ task: TaskItem, in status: TaskStatus, orderedIDs: [UUID]) throws {
-        let targetIndex = orderedIDs.firstIndex(of: task.id) ?? orderedIDs.count
-        var moved = task
-        moved.status = status
-        moved.sortOrder = Double(targetIndex)
-        moved.updatedAt = .now
-        moved.syncStatus = .pendingUpload
-        try repository.upsert(moved)
-
-        let restOfColumn = try repository.allTasks()
-            .filter { $0.id != task.id && $0.status == status && !$0.isDeleted }
-        let byID = Dictionary(uniqueKeysWithValues: restOfColumn.map { ($0.id, $0) })
-
-        for (index, id) in orderedIDs.enumerated() where id != task.id {
-            guard var item = byID[id], item.sortOrder != Double(index) else { continue }
-            item.sortOrder = Double(index)
-            item.updatedAt = .now
-            item.syncStatus = .pendingUpload
-            try repository.upsert(item)
+    /// Reassigns `sortOrder` to match `orderedIDs` — the desired order for every currently
+    /// visible (non-deleted) task, regardless of status. Drives manual drag-to-reorder.
+    func reorderTasks(orderedIDs: [UUID]) throws {
+        let byID = Dictionary(
+            uniqueKeysWithValues: try repository.allTasks().filter { !$0.isDeleted }.map { ($0.id, $0) }
+        )
+        for (index, id) in orderedIDs.enumerated() {
+            guard var task = byID[id], task.sortOrder != Double(index) else { continue }
+            task.sortOrder = Double(index)
+            task.updatedAt = .now
+            task.syncStatus = .pendingUpload
+            try repository.upsert(task)
         }
     }
 
-    private func nextSortOrder(in status: TaskStatus) throws -> Double {
+    private func nextSortOrder() throws -> Double {
         let maxOrder = try repository.allTasks()
-            .filter { $0.status == status && !$0.isDeleted }
+            .filter { !$0.isDeleted }
             .map(\.sortOrder)
             .max()
         return (maxOrder ?? -1) + 1

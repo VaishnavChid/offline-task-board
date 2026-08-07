@@ -34,10 +34,10 @@ final class TaskEditingUseCaseTests: XCTestCase {
         XCTAssertEqual(try? repository.allTasks().count, 0)
     }
 
-    func testCreateTaskAssignsIncrementingSortOrderWithinColumn() throws {
-        let first = try useCase.createTask(title: "First", notes: "")
-        let second = try useCase.createTask(title: "Second", notes: "")
-        XCTAssertLessThan(first.sortOrder, second.sortOrder)
+    func testCreateTaskAssignsIncrementingGlobalSortOrder() throws {
+        let first = try useCase.createTask(title: "First", notes: "", status: .todo)
+        let second = try useCase.createTask(title: "Second", notes: "", status: .done)
+        XCTAssertLessThan(first.sortOrder, second.sortOrder, "sortOrder increments globally, independent of status")
     }
 
     func testUpdateTaskBumpsUpdatedAtAndMarksPending() throws {
@@ -86,15 +86,14 @@ final class TaskEditingUseCaseTests: XCTestCase {
         XCTAssertEqual(try useCase.loadBoard().map(\.id), [created.id])
     }
 
-    func testMoveTaskAppendsToEndOfDestinationColumn() throws {
-        _ = try useCase.createTask(title: "Already in progress", notes: "", status: .inProgress)
+    func testMoveTaskChangesStatusButNotPosition() throws {
         let task = try useCase.createTask(title: "Move me", notes: "", status: .todo)
+        let originalOrder = task.sortOrder
 
         let moved = try useCase.moveTask(task, to: .inProgress)
-        let column = try useCase.loadBoard().filter { $0.status == .inProgress }.sorted { $0.sortOrder < $1.sortOrder }
 
         XCTAssertEqual(moved.status, .inProgress)
-        XCTAssertEqual(column.last?.id, moved.id)
+        XCTAssertEqual(moved.sortOrder, originalOrder, "changing status must not move the task within the global list")
     }
 
     func testMoveTaskToSameStatusIsNoOp() throws {
@@ -107,26 +106,29 @@ final class TaskEditingUseCaseTests: XCTestCase {
         XCTAssertEqual(result.syncStatus, .synced, "a no-op move must not dirty an already-synced task")
     }
 
-    func testPlaceTaskReordersWithinSameColumn() throws {
+    func testReorderTasksReassignsGlobalOrderAcrossStatuses() throws {
         let first = try useCase.createTask(title: "First", notes: "", status: .todo)
-        let second = try useCase.createTask(title: "Second", notes: "", status: .todo)
-        let third = try useCase.createTask(title: "Third", notes: "", status: .todo)
+        let second = try useCase.createTask(title: "Second", notes: "", status: .inProgress)
+        let third = try useCase.createTask(title: "Third", notes: "", status: .done)
 
-        try useCase.placeTask(first, in: .todo, orderedIDs: [second.id, third.id, first.id])
+        try useCase.reorderTasks(orderedIDs: [third.id, first.id, second.id])
 
-        let column = try useCase.loadBoard().filter { $0.status == .todo }.sorted { $0.sortOrder < $1.sortOrder }
-        XCTAssertEqual(column.map(\.id), [second.id, third.id, first.id])
-        XCTAssertTrue(column.allSatisfy { $0.syncStatus == .pendingUpload })
+        let board = try useCase.loadBoard().sorted { $0.sortOrder < $1.sortOrder }
+        XCTAssertEqual(board.map(\.id), [third.id, first.id, second.id])
+        XCTAssertTrue(board.allSatisfy { $0.syncStatus == .pendingUpload })
     }
 
-    func testPlaceTaskMovesAcrossColumnsAtExactPosition() throws {
-        let inProgressA = try useCase.createTask(title: "A", notes: "", status: .inProgress)
-        let inProgressB = try useCase.createTask(title: "B", notes: "", status: .inProgress)
-        let moving = try useCase.createTask(title: "Moving", notes: "", status: .todo)
+    func testReorderTasksLeavesUnaffectedTaskUntouched() throws {
+        let moving = try useCase.createTask(title: "Moving", notes: "")
+        var settled = try useCase.createTask(title: "Already synced", notes: "")
+        settled.syncStatus = .synced
+        try repository.upsert(settled)
 
-        try useCase.placeTask(moving, in: .inProgress, orderedIDs: [inProgressA.id, moving.id, inProgressB.id])
+        // settled is already at its correct index (1), so reordering with it unchanged
+        // shouldn't dirty it back to pending.
+        try useCase.reorderTasks(orderedIDs: [moving.id, settled.id])
 
-        let column = try useCase.loadBoard().filter { $0.status == .inProgress }.sorted { $0.sortOrder < $1.sortOrder }
-        XCTAssertEqual(column.map(\.id), [inProgressA.id, moving.id, inProgressB.id])
+        let stored = try repository.allTasks().first { $0.id == settled.id }
+        XCTAssertEqual(stored?.syncStatus, .synced)
     }
 }
