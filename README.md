@@ -108,7 +108,7 @@ Deleting the plist entirely also works: the app falls back to `UnavailableTaskRe
 
 ## Run and test
 
-Open `OfflineTaskBoard.xcodeproj` in Xcode, select an iOS 26 simulator, and run. Run the test suite from the Test navigator or `xcodebuild test` — 38 tests across:
+Open `OfflineTaskBoard.xcodeproj` in Xcode, select an iOS 26 simulator, and run. Run the test suite from the Test navigator or `xcodebuild test` — 40 tests across:
 
 - `TaskEditingUseCaseTests` — validation, tombstoning, status changes vs. position, global reorder.
 - `TaskSyncUseCaseTests` — upload/pull, per-task failure isolation, tombstone-purge-on-delete, conflict detection (both a directly-constructed conflicted state and, separately, a realistic pending-local-edit path — the latter is a regression test for a bug where the outbox draining before the pull meant a real conflict was never actually detected, only silently overwritten) and same-pass resolution.
@@ -163,7 +163,7 @@ Open `OfflineTaskBoard.xcodeproj` in Xcode, select an iOS 26 simulator, and run.
 
 - A single shared task list with no authentication is acceptable for this exercise's scope.
 - Committing a live Firebase config is acceptable *given* the rules genuinely restrict what can be written (verified above) — the config file itself was never the actual security boundary, so gitignoring it wouldn't have added real protection, only reviewer friction.
-- iOS 26 as a minimum deployment target is acceptable, since it's the only SDK available in the build environment.
+- iOS 26 as a minimum deployment target is acceptable (see Requirements above for why).
 - "Reorder tasks" (an explicit core requirement) is satisfied by a single global manual ordering rather than per-status ordering, given the flat-list redesign.
 
 ## Approximate time spent
@@ -172,4 +172,4 @@ Roughly 10–12 hours across architecture and domain design, SwiftData/Firestore
 
 ## AI tool disclosure
 
-This project was built with Claude Code (Anthropic) as a pairing tool throughout — architecture scaffolding, implementation, debugging (including the Firestore linker investigation), test writing, and iterative UI changes were done in an AI-assisted session. Architectural direction (MVVM + Clean Architecture, SwiftData + Firestore, the flat-list UI redesign, the CloudKit-vs-Firestore call, conflict/reorder semantics) and all product decisions were made by the author through that session, with the expectation of being able to explain and defend every part of it directly.
+Every decision that actually shapes this app — the architecture and how it's scoped, SwiftData + Firestore over CloudKit, the outbox/conflict-resolution design, the flat-list UI redesign, what shipped versus what got deliberately cut — was made by the author. Claude Code (Anthropic) was the execution partner throughout: scaffolding, implementation, debugging (including the Firestore linker investigation and a SwiftData delete-persistence bug caught via live testing).
