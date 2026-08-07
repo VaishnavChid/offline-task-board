@@ -48,7 +48,7 @@ struct TaskCardView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular.tint(statusTint.opacity(0.10)).interactive(), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .glassEffect(.regular.tint(task.status.tintColor.opacity(0.10)).interactive(), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .onTapGesture(perform: onEdit)
         .accessibilityElement(children: .combine)
@@ -86,14 +86,6 @@ struct TaskCardView: View {
         case .pendingUpload, .pendingDelete: return .orange
         case .failed: return .red
         case .conflicted: return .purple
-        }
-    }
-
-    private var statusTint: Color {
-        switch task.status {
-        case .todo: return .indigo
-        case .inProgress: return .orange
-        case .done: return .green
         }
     }
 }

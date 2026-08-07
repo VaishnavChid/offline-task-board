@@ -44,11 +44,16 @@ struct TaskEditorView: View {
                         onSave(title, notes)
                         dismiss()
                     }
-                    .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .tint(.blue)
+                    .disabled(isTitleEmpty)
                 }
             }
         }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
+    }
+
+    private var isTitleEmpty: Bool {
+        title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
