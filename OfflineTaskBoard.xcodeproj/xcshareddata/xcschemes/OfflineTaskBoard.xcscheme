@@ -21,6 +21,20 @@
                ReferencedContainer = "container:OfflineTaskBoard.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E202"
+               BuildableName = "OfflineTaskBoardTests.xctest"
+               BlueprintName = "OfflineTaskBoardTests"
+               ReferencedContainer = "container:OfflineTaskBoard.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
