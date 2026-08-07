@@ -34,9 +34,12 @@ struct FirestoreTaskRemoteStore: TaskRemoteDataSource {
         collection = database.collection("tasks")
     }
 
+    /// One malformed document (e.g. hand-edited in the Firestore console) skips just that
+    /// document rather than failing the whole pull — mirrors the per-task isolation already used
+    /// on the push side in `TaskSyncUseCase`.
     func fetchAll() async throws -> [TaskItem] {
         let snapshot = try await collection.getDocuments()
-        return try snapshot.documents.map(TaskItem.init(firestoreDocument:))
+        return snapshot.documents.compactMap { try? TaskItem(firestoreDocument: $0) }
     }
 
     func save(_ task: TaskItem) async throws {

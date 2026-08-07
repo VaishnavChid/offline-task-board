@@ -26,7 +26,7 @@ final class BoardViewModel: ObservableObject {
         do {
             tasks = try editing.loadBoard()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = "Couldn't load your tasks. Try again in a moment."
         }
     }
 
@@ -73,12 +73,19 @@ final class BoardViewModel: ObservableObject {
         isSyncing = false
     }
 
+    /// Surfaces our own `TaskValidationError` messages verbatim — they're written for the user
+    /// already (e.g. "Give the task a title before saving"). Anything else is an unexpected
+    /// failure in the storage layer; rather than showing its raw, technical description, this
+    /// falls back to one honest, non-alarming message so the user always sees something they can
+    /// actually act on instead of a SwiftData/Foundation error string.
     private func perform(_ action: () throws -> Void) {
         do {
             try action()
             load()
+        } catch let validationError as TaskValidationError {
+            errorMessage = validationError.errorDescription
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = "Something went wrong saving that change. Your other tasks are safe."
         }
     }
 
