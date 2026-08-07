@@ -15,9 +15,13 @@ import FirebaseFirestore
 /// decode path is exercised via `init(firestoreDocumentID:fields:)` rather than a real
 /// `QueryDocumentSnapshot`, which can only come from an actual Firestore call.
 ///
-/// Compiled only when the Firebase package is actually linked (see README "Known limitations" —
-/// an upstream Firebase SPM/abseil linker bug on Xcode 26 currently prevents that in this
-/// environment) so the rest of the suite isn't held hostage by a dependency that isn't wired up.
+/// Compiled only when the Firebase package is linked. It's linked into the app target directly;
+/// the test target intentionally does *not* re-link the Firestore/abseil/gRPC/leveldb/nanopb
+/// binary products itself — Xcode's separately-linked test-bundle variant of those hits a real
+/// upstream linker bug on this Xcode 26 toolchain (github.com/firebase/firebase-ios-sdk#15642)
+/// even though the app target links the exact same products fine. Since XCTest unit test bundles
+/// run in-process inside the host app, these tests still execute against the app's already-linked
+/// Firestore symbols without needing their own separate link.
 final class FirestoreTaskRemoteStoreTests: XCTestCase {
     func testDecodingAWellFormedDocumentProducesASyncedTask() throws {
         let id = UUID()
