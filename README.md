@@ -1,6 +1,6 @@
 # Offline Task Board
 
-An offline-first iOS task board — built for the Associate Principal iOS Engineer take-home exercise. Every action (create, edit, move, reorder, delete) commits to SwiftData immediately; sync with Firestore happens through an outbox that never blocks the UI and never loses a change, online or off.
+An offline-first iOS task board — Every action (create, edit, move, reorder, delete) commits to SwiftData immediately; sync with Firestore happens through an outbox that never blocks the UI and never loses a change, online or off.
 
 ## Requirements
 
