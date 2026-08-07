@@ -44,6 +44,7 @@ struct TaskEditorView: View {
                         onSave(title, notes)
                         dismiss()
                     }
+                    .buttonStyle(.borderedProminent)
                     .tint(.blue)
                     .disabled(isTitleEmpty)
                 }

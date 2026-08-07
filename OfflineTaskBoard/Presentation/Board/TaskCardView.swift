@@ -51,15 +51,9 @@ struct TaskCardView: View {
                     .accessibilityLabel("Task options")
                 }
 
-                HStack {
-                    Text("Added \(addedDateText)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Image(systemName: task.status.symbolName)
-                        .font(.caption)
-                        .foregroundStyle(task.status.tintColor)
-                }
+                Text("Added \(addedDateText)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
                 if !task.notes.isEmpty {
                     Text(task.notes)
@@ -68,7 +62,15 @@ struct TaskCardView: View {
                         .lineLimit(3)
                 }
 
-                syncBadge
+                HStack {
+                    syncBadge
+                    Spacer()
+                    Text(task.status.title)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(task.status.tintColor)
+                        .contentTransition(.opacity)
+                        .animation(.easeInOut(duration: 0.2), value: task.status)
+                }
             }
         }
         .padding(14)

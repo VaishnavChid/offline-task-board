@@ -13,6 +13,8 @@ struct BoardView: View {
     @ObservedObject var viewModel: BoardViewModel
     @State private var editorTarget: EditorTarget?
     @State private var editMode: EditMode = .inactive
+    @State private var searchText = ""
+    @State private var taskPendingDeletion: TaskItem?
 
     /// Drives `.sheet(item:)` rather than `.sheet(isPresented:)` + a separate `TaskItem?`: setting
     /// both a boolean and the task in the same action left the sheet's content occasionally
@@ -45,8 +47,12 @@ struct BoardView: View {
                     addTaskButton
                 }
                 .padding(.horizontal)
+                searchField
                 taskList
             }
+        }
+        .onChange(of: searchText) { _, newValue in
+            if !newValue.isEmpty { editMode = .inactive }
         }
         .sheet(item: $editorTarget) { target in
             switch target {
@@ -67,6 +73,18 @@ struct BoardView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+        .confirmationDialog(
+            "Delete \u{201C}\(taskPendingDeletion?.title ?? "")\u{201D}?",
+            isPresented: deletionBinding,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                if let task = taskPendingDeletion {
+                    deleteWithAnimation(task)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        }
     }
 
     /// One flat list instead of grouping by status — a status with many tasks no longer buries
@@ -75,11 +93,20 @@ struct BoardView: View {
     /// (advances the workflow) and the small badge on its second line, not by position.
     private var taskList: some View {
         List {
-            ForEach(viewModel.tasks) { task in
+            if displayedTasks.isEmpty && !searchText.isEmpty {
+                Text("No tasks match \u{201C}\(searchText)\u{201D}")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 40)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
+            ForEach(displayedTasks) { task in
                 TaskCardView(
                     task: task,
                     onEdit: { editorTarget = .edit(task) },
-                    onDelete: { deleteWithAnimation(task) },
+                    onDelete: { taskPendingDeletion = task },
                     onMove: { destination in viewModel.moveTask(task, to: destination) },
                     onAdvanceStatus: { withAnimation(.easeInOut(duration: 0.2)) { viewModel.advanceStatus(of: task) } }
                 )
@@ -87,20 +114,63 @@ struct BoardView: View {
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                 .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) { deleteWithAnimation(task) } label: {
+                    Button(role: .destructive) { taskPendingDeletion = task } label: {
                         Label("Delete", systemImage: "trash")
                     }
                     .tint(.red)
                 }
             }
             .onMove { source, destination in
-                viewModel.reorderTasks(source: source, destination: destination)
+                // Reordering is disabled while searching (see `header`, which hides the toggle) —
+                // dragging a filtered subset isn't a meaningful position to persist. Otherwise
+                // `displayedTasks`' exact current order (done tasks already sunk to the bottom)
+                // is what actually gets persisted, not the raw `viewModel.tasks` order.
+                guard searchText.isEmpty else { return }
+                viewModel.reorderTasks(displayedIDs: displayedTasks.map(\.id), source: source, destination: destination)
             }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .animation(.easeInOut(duration: 0.25), value: viewModel.tasks)
         .environment(\.editMode, $editMode)
+    }
+
+    /// Search-filtered, then a stable partition that sinks `.done` tasks to the bottom without
+    /// disturbing relative order otherwise — a display-time transform, not a change to the
+    /// persisted `sortOrder`, so it stays purely presentational the same way search does.
+    private var displayedTasks: [TaskItem] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let base = query.isEmpty ? viewModel.tasks : viewModel.tasks.filter {
+            $0.title.localizedCaseInsensitiveContains(query) || $0.notes.localizedCaseInsensitiveContains(query)
+        }
+        let active = base.filter { $0.status != .done }
+        let done = base.filter { $0.status == .done }
+        return active + done
+    }
+
+    /// Sits below the sync card and above the list — a plain filter over already-loaded tasks,
+    /// not a use case: it's presentation-only, not a business rule.
+    private var searchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+            TextField("Search tasks", text: $searchText)
+                .textFieldStyle(.plain)
+                .autocorrectionDisabled()
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear search")
+            }
+        }
+        .padding(12)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(.horizontal)
     }
 
     private func deleteWithAnimation(_ task: TaskItem) {
@@ -114,14 +184,18 @@ struct BoardView: View {
             Text("Task Board")
                 .font(.system(size: 30, weight: .bold, design: .rounded))
             Spacer()
-            Button {
-                editMode = editMode == .active ? .inactive : .active
-            } label: {
-                Image(systemName: editMode == .active ? "checkmark.circle.fill" : "arrow.up.arrow.down.circle")
-                    .font(.title2)
-                    .foregroundStyle(.secondary)
+            // Reordering is index-based against the unfiltered list — hidden while searching
+            // rather than left available and silently wrong against filtered positions.
+            if searchText.isEmpty {
+                Button {
+                    editMode = editMode == .active ? .inactive : .active
+                } label: {
+                    Image(systemName: editMode == .active ? "checkmark.circle.fill" : "arrow.up.arrow.down.circle")
+                        .font(.title2)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityLabel(editMode == .active ? "Done reordering" : "Reorder tasks")
             }
-            .accessibilityLabel(editMode == .active ? "Done reordering" : "Reorder tasks")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal)
@@ -130,6 +204,10 @@ struct BoardView: View {
 
     private var errorBinding: Binding<Bool> {
         Binding(get: { viewModel.errorMessage != nil }, set: { if !$0 { viewModel.errorMessage = nil } })
+    }
+
+    private var deletionBinding: Binding<Bool> {
+        Binding(get: { taskPendingDeletion != nil }, set: { if !$0 { taskPendingDeletion = nil } })
     }
 
     private var syncStatusBar: some View {

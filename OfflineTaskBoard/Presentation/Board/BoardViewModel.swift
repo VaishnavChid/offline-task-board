@@ -56,11 +56,13 @@ final class BoardViewModel: ObservableObject {
     }
 
     /// List-driven reorder of the whole flat board. `source`/`destination` come straight from
-    /// SwiftUI's `.onMove` — `tasks` is already the global, sortOrder-driven display order, so
-    /// this reorders across statuses exactly the same way as within one.
-    func reorderTasks(source: IndexSet, destination: Int) {
-        guard let sourceIndex = source.first, source.count == 1, sourceIndex < tasks.count else { return }
-        var orderedIDs = tasks.map(\.id)
+    /// SwiftUI's `.onMove`. `displayedIDs` is the exact order the view is currently showing —
+    /// which the caller must pass explicitly rather than this method assuming it matches `tasks`,
+    /// since the view may be showing a search-filtered and/or done-tasks-sunk-to-the-bottom
+    /// ordering that differs from the raw `tasks` array.
+    func reorderTasks(displayedIDs: [UUID], source: IndexSet, destination: Int) {
+        guard let sourceIndex = source.first, source.count == 1, sourceIndex < displayedIDs.count else { return }
+        var orderedIDs = displayedIDs
         orderedIDs.move(fromOffsets: source, toOffset: destination)
         perform { try editing.reorderTasks(orderedIDs: orderedIDs) }
     }

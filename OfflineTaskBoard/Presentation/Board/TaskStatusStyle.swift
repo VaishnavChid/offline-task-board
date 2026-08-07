@@ -18,11 +18,13 @@ extension TaskStatus {
         }
     }
 
+    /// `.done` is gray rather than a status color — a finished task is deliberately deprioritized
+    /// visually, not celebrated with color, since it also sinks to the bottom of the list.
     var tintColor: Color {
         switch self {
         case .todo: return .indigo
         case .inProgress: return .orange
-        case .done: return .green
+        case .done: return .gray
         }
     }
 }
