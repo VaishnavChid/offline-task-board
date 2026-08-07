@@ -34,22 +34,22 @@ TaskCardView, ...                  ↑                          UnavailableTaskR
 - **Conflict policy:** each task tracks `lastSyncedUpdatedAt` — the remote timestamp as of the last confirmed sync. If remote and local both changed since that baseline, it's a genuine conflict: local wins immediately (marked `.conflicted` so the UI can say so), and since a `.conflicted` task still counts as "pending," it self-resolves by overwriting the remote on the very next sync pass. If only one side changed, that side's version applies with no conflict.
 - **One flat, global list instead of Kanban-style per-status columns.** `sortOrder` is a single ordering across every task regardless of status — changing status is purely a workflow/label change (via a tap-to-cycle status icon on each card, or a "Move to" menu) and never moves a task's position. This came out of iterating on the UI: a per-status column view means a status with many tasks can bury the other columns off-screen; one list keeps everything visible, with the status icon and a small badge as the at-a-glance signal instead of physical grouping.
 - **Drag-to-reorder** via SwiftUI List's native `onMove`, gated behind a compact edit-mode toggle in the header (not a full `EditButton()` text label) — swipe-to-delete and the "..." menu handle the rest, so the toggle only appears when you actually want to reorder.
-- **No live Firebase credentials are ever committed.** `GoogleService-Info.plist` is gitignored. Without it, `UnavailableTaskRemoteStore` keeps the app fully functional offline, and `TaskSyncUseCase` reports "not configured" through the same failure path as any other sync failure — not a crash, not a special case.
+- **`GoogleService-Info.plist` is committed, deliberately, after locking down Firestore's rules first.** The instinct is to gitignore it, but the plist isn't actually the access boundary — Firestore's REST API doesn't even require it for a request to go through; **Security Rules** are what decide who can read/write what, independent of who holds the config file. Firestore's rules here validate every write's shape (title present and bounded, `status` one of the three real values, no unexpected fields) so a bot scanning public repos for exposed Firebase configs can't inject garbage — verified directly against the live REST API (well-formed write → 200, malformed → 403 in every case tried). There's still no auth, so nothing stops someone from writing many *valid-looking* tasks or clearing the collection; with no real user data involved, that residual risk was an acceptable, deliberate tradeoff for a repo a reviewer needs to run with zero setup. If Firebase weren't configured at all, `UnavailableTaskRemoteStore` would keep the app fully functional offline regardless — that fallback stays in place either way.
 - **CloudKit was seriously considered** instead of Firestore — zero third-party dependency, zero secret file to manage, which fits "no undisclosed configuration" better than any Firebase setup could. It was ruled out for two reasons: no paid Apple Developer Program membership was available to reliably provision an iCloud container, and — more fundamentally — CloudKit containers are scoped to the Apple Developer Team that created them, so a reviewer building this on their own machine with their own Apple ID would get an empty container, not the same data, even if the container problem weren't an issue. Firestore's project credentials are shareable across unrelated builds in a way CloudKit's aren't.
 - **iOS 26 Liquid Glass styling** throughout (`glassEffect`, the platform's default floating tab/toolbar treatment) since iOS 26 was the only SDK available.
 
 ## Firebase / Firestore setup
 
-The repository intentionally does not include `GoogleService-Info.plist` — Firestore is currently running in open test-mode security rules (see Known limitations), and this file is not a traditional secret but does grant access to that project. To run with live sync:
+`GoogleService-Info.plist` is committed (see the decisions above for why), so **live sync works with zero setup** — clone, open in Xcode, build and run. `FirebaseBootstrap` detects the plist and configures Firebase automatically; `AppDependencies` picks `FirestoreTaskRemoteStore` over the offline fallback at launch.
+
+If you want to point the app at your own Firebase project instead (e.g. to see it running against rules you control):
 
 1. Go to the [Firebase Console](https://console.firebase.google.com), sign in, and create a project.
 2. Add an iOS app with bundle ID `com.vaishnav.OfflineTaskBoard`.
-3. Download the generated `GoogleService-Info.plist`.
-4. Drag it into the `OfflineTaskBoard/` folder in Xcode's project navigator (top-level app folder), with "Copy items if needed" and the `OfflineTaskBoard` target both checked.
-5. In the console, go to **Build → Firestore Database → Create database**, start in test mode, pick any region.
-6. Build and run — `FirebaseBootstrap` detects the plist and configures Firebase automatically; `AppDependencies` switches from `UnavailableTaskRemoteStore` to `FirestoreTaskRemoteStore` at launch.
+3. Download the generated `GoogleService-Info.plist` and replace the one in `OfflineTaskBoard/` (Xcode: drag it in over the existing reference, "Copy items if needed" + the `OfflineTaskBoard` target checked).
+4. In the console, go to **Build → Firestore Database → Create database**, and set up rules — the validation rules used here are in the "Known limitations" section below if you want to reuse them.
 
-Without the plist, the app builds, runs, and is fully usable — sync attempts just report "not configured" instead of connecting.
+Deleting the plist entirely also works: the app falls back to `UnavailableTaskRemoteStore` and stays fully usable offline, with sync attempts reporting "not configured" through the same failure path as any other sync failure.
 
 ## Run and test
 
@@ -64,7 +64,26 @@ Open `OfflineTaskBoard.xcodeproj` in Xcode, select an iOS 26 simulator, and run.
 ## Known limitations
 
 - **Firestore's SPM package links into the app target but not the test target.** Firestore's binary dependencies (`abseil`, `leveldb`, `nanopb`, `gRPC-Core`/`gRPC-C++`) fail to link under the test target's separately-built `-enable-testing` variant specifically — a reproducible upstream bug on this Xcode 26 toolchain ([firebase/firebase-ios-sdk#15642](https://github.com/firebase/firebase-ios-sdk/issues/15642), [#14464](https://github.com/firebase/firebase-ios-sdk/issues/14464)), confirmed after exhausting the standard workarounds. Since XCTest unit bundles run in-process inside the host app, `FirestoreTaskRemoteStoreTests` still executes correctly against the app's already-linked symbols — this only affects how the test target itself links, not test coverage.
-- **Firestore security rules are open (test mode)** — no authentication, and the rules auto-expire to deny-all after 30 days. Fine for a review window, not representative of a real deployment.
+- **Firestore rules validate shape, not identity.** There's no authentication, so rules can restrict *what* a write looks like but not *who* is writing — someone could still write many valid-looking tasks or clear the collection. Not representative of a real deployment; acceptable for a review window with no real user data. The rules in place:
+
+  ```
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /tasks/{taskId} {
+        allow read: if true;
+        allow create, update: if request.resource.data.keys().hasOnly(['title','notes','status','sortOrder','createdAt','updatedAt'])
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0 && request.resource.data.title.size() < 300
+          && request.resource.data.status in ['todo', 'inProgress', 'done']
+          && request.resource.data.sortOrder is number;
+        allow delete: if true;
+      }
+    }
+  }
+  ```
+
+  Verified directly against the live REST API: well-formed writes return 200; a bad `status` value, an unexpected extra field, and a missing `title` were each independently confirmed to return 403. Unlike Firestore's default test-mode template, these don't have a built-in expiry — they stay in effect until changed.
 - **No remote-deletion feed.** If a task were deleted directly in Firestore (bypassing the app), the app has no way to detect that and remove it locally — it would need a dedicated tombstone/deletion feed from the server, which felt like more infrastructure than this exercise needs.
 - **No authentication.** All tasks live in one shared `tasks` collection — there's no per-user separation.
 - **No background sync.** Sync runs on launch and on manual "Sync" tap only; nothing runs while the app is backgrounded.
@@ -83,7 +102,7 @@ Open `OfflineTaskBoard.xcodeproj` in Xcode, select an iOS 26 simulator, and run.
 ## Assumptions
 
 - A single shared task list with no authentication is acceptable for this exercise's scope.
-- "No undisclosed configuration" is satisfied by documenting the Firebase setup steps above, rather than requiring the repo to build with live sync out of the box — committing real credentials for an openly-writable Firestore project felt like the wrong tradeoff (see Known limitations).
+- Committing a live Firebase config is acceptable *given* the rules genuinely restrict what can be written (verified above) — the config file itself was never the actual security boundary, so gitignoring it wouldn't have added real protection, only reviewer friction.
 - iOS 26 as a minimum deployment target is acceptable, since it's the only SDK available in the build environment.
 - "Reorder tasks" (an explicit core requirement) is satisfied by a single global manual ordering rather than per-status ordering, given the flat-list redesign.
 
