@@ -97,13 +97,6 @@ Decisions above where a real alternative was rejected, and what that cost:
 
 `GoogleService-Info.plist` is committed (see Trade-offs above for why), so **live sync works with zero setup** — clone, open in Xcode, build and run. `FirebaseBootstrap` detects the plist and configures Firebase automatically; `AppDependencies` picks `FirestoreTaskRemoteStore` over the offline fallback at launch.
 
-If you want to point the app at your own Firebase project instead (e.g. to see it running against rules you control):
-
-1. Go to the [Firebase Console](https://console.firebase.google.com), sign in, and create a project.
-2. Add an iOS app with bundle ID `com.vaishnav.OfflineTaskBoard`.
-3. Download the generated `GoogleService-Info.plist` and replace the one in `OfflineTaskBoard/` (Xcode: drag it in over the existing reference, "Copy items if needed" + the `OfflineTaskBoard` target checked).
-4. In the console, go to **Build → Firestore Database → Create database**, and set up rules — the validation rules used here are in the "Known limitations" section below if you want to reuse them.
-
 Deleting the plist entirely also works: the app falls back to `UnavailableTaskRemoteStore` and stays fully usable offline, with sync attempts reporting "not configured" through the same failure path as any other sync failure.
 
 ## Run and test
