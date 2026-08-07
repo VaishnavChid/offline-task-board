@@ -15,6 +15,12 @@ struct BoardView: View {
     @State private var editMode: EditMode = .inactive
     @State private var searchText = ""
     @State private var taskPendingDeletion: TaskItem?
+    /// Deliberately separate from `taskPendingDeletion` rather than deriving `isPresented` from
+    /// "is it non-nil" — that coupling let the alert's own dismissal (which nils the binding) race
+    /// with the Delete button's action closure reading the same property, so the task reference
+    /// could already be gone by the time the action ran. This flag drives presentation; only the
+    /// Cancel/Delete actions themselves ever clear `taskPendingDeletion`.
+    @State private var isDeleteConfirmationPresented = false
     @FocusState private var isSearchFocused: Bool
 
     /// Drives `.sheet(item:)` rather than `.sheet(isPresented:)` + a separate `TaskItem?`: setting
@@ -77,13 +83,16 @@ struct BoardView: View {
         }
         .alert(
             "Delete \u{201C}\(taskPendingDeletion?.title ?? "")\u{201D}?",
-            isPresented: deletionBinding
+            isPresented: $isDeleteConfirmationPresented
         ) {
-            Button("Cancel", role: .cancel) {}
+            Button("Cancel", role: .cancel) {
+                taskPendingDeletion = nil
+            }
             Button("Delete", role: .destructive) {
                 if let task = taskPendingDeletion {
                     deleteWithAnimation(task)
                 }
+                taskPendingDeletion = nil
             }
         }
     }
@@ -107,7 +116,10 @@ struct BoardView: View {
                 TaskCardView(
                     task: task,
                     onEdit: { editorTarget = .edit(task) },
-                    onDelete: { taskPendingDeletion = task },
+                    onDelete: {
+                        taskPendingDeletion = task
+                        isDeleteConfirmationPresented = true
+                    },
                     onMove: { destination in viewModel.moveTask(task, to: destination) },
                     onAdvanceStatus: { withAnimation(.easeInOut(duration: 0.2)) { viewModel.advanceStatus(of: task) } }
                 )
@@ -115,7 +127,10 @@ struct BoardView: View {
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                 .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) { taskPendingDeletion = task } label: {
+                    Button(role: .destructive) {
+                        taskPendingDeletion = task
+                        isDeleteConfirmationPresented = true
+                    } label: {
                         Label("Delete", systemImage: "trash")
                     }
                     .tint(.red)
@@ -212,10 +227,6 @@ struct BoardView: View {
 
     private var errorBinding: Binding<Bool> {
         Binding(get: { viewModel.errorMessage != nil }, set: { if !$0 { viewModel.errorMessage = nil } })
-    }
-
-    private var deletionBinding: Binding<Bool> {
-        Binding(get: { taskPendingDeletion != nil }, set: { if !$0 { taskPendingDeletion = nil } })
     }
 
     private var syncStatusBar: some View {
