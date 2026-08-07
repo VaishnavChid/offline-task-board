@@ -9,9 +9,24 @@ import SwiftUI
 
 struct BoardView: View {
     @StateObject private var viewModel: BoardViewModel
-    @State private var showingEditor = false
-    @State private var editingTask: TaskItem?
+    @State private var editorTarget: EditorTarget?
     @State private var editMode: EditMode = .inactive
+
+    /// Drives `.sheet(item:)` rather than `.sheet(isPresented:)` + a separate `TaskItem?`: setting
+    /// both a boolean and the task in the same action left the sheet's content occasionally
+    /// presenting before it saw the task, always opening a blank "New Task" form even when editing
+    /// an existing one. Keying presentation off one `Identifiable` value sidesteps that entirely.
+    private enum EditorTarget: Identifiable {
+        case create
+        case edit(TaskItem)
+
+        var id: String {
+            switch self {
+            case .create: return "create"
+            case .edit(let task): return task.id.uuidString
+            }
+        }
+    }
 
     init(viewModel: BoardViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -35,12 +50,15 @@ struct BoardView: View {
                 taskList
             }
         }
-        .sheet(isPresented: $showingEditor) {
-            TaskEditorView(task: editingTask) { title, notes in
-                if let editingTask {
-                    viewModel.updateTask(editingTask, title: title, notes: notes)
-                } else {
+        .sheet(item: $editorTarget) { target in
+            switch target {
+            case .create:
+                TaskEditorView(task: nil) { title, notes in
                     viewModel.createTask(title: title, notes: notes, status: .todo)
+                }
+            case .edit(let task):
+                TaskEditorView(task: task) { title, notes in
+                    viewModel.updateTask(task, title: title, notes: notes)
                 }
             }
         }
@@ -64,10 +82,7 @@ struct BoardView: View {
             ForEach(viewModel.tasks) { task in
                 TaskCardView(
                     task: task,
-                    onEdit: {
-                        editingTask = task
-                        showingEditor = true
-                    },
+                    onEdit: { editorTarget = .edit(task) },
                     onDelete: { viewModel.deleteTask(task) },
                     onMove: { destination in viewModel.moveTask(task, to: destination) },
                     onAdvanceStatus: { viewModel.advanceStatus(of: task) }
@@ -137,8 +152,7 @@ struct BoardView: View {
     /// actions and shouldn't share one container.
     private var addTaskButton: some View {
         Button {
-            editingTask = nil
-            showingEditor = true
+            editorTarget = .create
         } label: {
             Image(systemName: "plus")
                 .font(.headline.weight(.bold))
