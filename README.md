@@ -102,6 +102,8 @@ Open `OfflineTaskBoard.xcodeproj` in Xcode, select an iOS 26 simulator, and run.
 - Retry backoff for repeatedly-failing syncs (currently a failed task just waits for the next manual sync, with no escalating delay).
 - Authentication and per-user data.
 - Polish on the app icon and other in-app iconography — the current icon is a quickly generated gradient-and-checkmark placeholder, not a designed mark.
+- Debouncing immediate sync. Every edit fires its own sync attempt right now, so a rapid burst of edits (fast typing, quick reordering) fires that many overlapping sync passes instead of coalescing them into one — a deliberate simplicity tradeoff when immediate sync was added, but one worth revisiting.
+- A reachability check (`NWPathMonitor`) before attempting a sync. An attempt made while offline today just fails harmlessly into the existing `.failed` retry path, but a reachability check would skip the pointless attempt entirely and could trigger a sync automatically the moment connectivity returns, rather than waiting for the next edit or manual tap.
 - A smarter "Synced" badge: since every edit now syncs immediately while online, a task reads "Synced" almost all the time when connected, which doesn't tell the user much — the badge is genuinely useful for distinguishing pending/failed from synced while offline, less so as a constant, static label while online. Showing it only when it's informative (offline, pending, failed, or briefly right after a sync completes) rather than as a permanent per-card fixture would be a better use of that space.
 
 ## Assumptions
