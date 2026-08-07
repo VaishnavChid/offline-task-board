@@ -82,6 +82,32 @@ final class SwiftDataTaskRepositoryTests: XCTestCase {
         XCTAssertEqual(try anotherRepository.allTasks().map(\.title), ["Survives relaunch"])
     }
 
+    /// Regression test for a real bug: `TaskModel` used to name its soft-delete flag `isDeleted`,
+    /// which collides with the read-only `isDeleted` Core Data already defines on every managed
+    /// object (SwiftData is Core Data-backed) to mean "removed from its context" — a different
+    /// thing entirely from our own tombstone flag. Writing `true` to that property succeeded in
+    /// memory, but a *fresh* fetch — exactly what `deleteTask` → `loadBoard` do back-to-back —
+    /// read the same row back with the flag reset to `false`. Found live: deleting a task made it
+    /// slide off screen, then reappear moments later — the sync engine saw `isDeleted == false`
+    /// and re-uploaded it as a normal edit instead of deleting it. This test upserts a task, then
+    /// upserts it again with `isDeleted = true` (the exact update-in-place path `deleteTask` uses,
+    /// not a fresh insert), and re-fetches through a brand-new repository instance over the same
+    /// store to rule out any in-memory object identity masking the bug.
+    func testSoftDeleteFlagSurvivesAFreshFetch() throws {
+        let task = TaskItem(title: "Soft delete me", status: .todo, sortOrder: 0)
+        try repository.upsert(task)
+
+        var tombstoned = task
+        tombstoned.isDeleted = true
+        tombstoned.syncStatus = .pendingDelete
+        try repository.upsert(tombstoned)
+
+        let anotherRepository = SwiftDataTaskRepository(context: container.mainContext)
+        let refetched = try anotherRepository.allTasks().first
+        XCTAssertEqual(refetched?.isDeleted, true)
+        XCTAssertEqual(refetched?.syncStatus, .pendingDelete)
+    }
+
     func testRoundTripPreservesAllFields() throws {
         let now = Date(timeIntervalSince1970: 10_000)
         let task = TaskItem(

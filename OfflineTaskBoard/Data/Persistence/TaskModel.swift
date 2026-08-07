@@ -21,7 +21,14 @@ final class TaskModel {
     var createdAt: Date
     var updatedAt: Date
     var syncStatusRaw: String
-    var isDeleted: Bool
+    /// Named `isTombstoned`, not `isDeleted` — `isDeleted` collides with the read-only property
+    /// Core Data (which SwiftData is built on) already defines on every managed object to mean
+    /// "removed from its context," a completely different thing from our own soft-delete flag.
+    /// A custom `@Model` property named `isDeleted` writes fine in memory but doesn't reliably
+    /// survive a fresh fetch — found live: deleting a task set it locally, but a `FetchDescriptor`
+    /// query moments later read the same row back with `isDeleted == false`, so the sync engine
+    /// treated a delete as a normal edit and re-uploaded it instead of removing it.
+    var isTombstoned: Bool
     var lastSyncedUpdatedAt: Date?
 
     init(item: TaskItem) {
@@ -33,7 +40,7 @@ final class TaskModel {
         createdAt = item.createdAt
         updatedAt = item.updatedAt
         syncStatusRaw = item.syncStatus.rawValue
-        isDeleted = item.isDeleted
+        isTombstoned = item.isDeleted
         lastSyncedUpdatedAt = item.lastSyncedUpdatedAt
     }
 
@@ -47,7 +54,7 @@ final class TaskModel {
             createdAt: createdAt,
             updatedAt: updatedAt,
             syncStatus: SyncStatus(rawValue: syncStatusRaw) ?? .pendingUpload,
-            isDeleted: isDeleted,
+            isDeleted: isTombstoned,
             lastSyncedUpdatedAt: lastSyncedUpdatedAt
         )
     }
@@ -60,7 +67,7 @@ final class TaskModel {
         createdAt = item.createdAt
         updatedAt = item.updatedAt
         syncStatusRaw = item.syncStatus.rawValue
-        isDeleted = item.isDeleted
+        isTombstoned = item.isDeleted
         lastSyncedUpdatedAt = item.lastSyncedUpdatedAt
     }
 }
