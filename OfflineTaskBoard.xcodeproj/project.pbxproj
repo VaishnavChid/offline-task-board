@@ -7,24 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		04D5AA531F7647BDF9682481 /* TaskEditingUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54AA7F2894F6705E4FEC3394 /* TaskEditingUseCase.swift */; };
-		0C1D0BF72B07450CA4EE56DC /* TaskRemoteDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A21423C566BFA0D7B78D2A /* TaskRemoteDataSource.swift */; };
-		14DF884A39F405A02DD6008A /* TaskEditingUseCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B1A4CFB898E4B5167F3623 /* TaskEditingUseCaseTests.swift */; };
-		1A68A4390C97A89AFFE7DF28 /* SwiftDataTaskRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC43A6B75DB937DCBA527ABC /* SwiftDataTaskRepositoryTests.swift */; };
-		2167DE1C3BEF4AC5871187AB /* UnavailableTaskRemoteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE88137176DCD6CEA7BA3B2D /* UnavailableTaskRemoteStoreTests.swift */; };
-		3CAF4E8846E5AB6C5FCB4251 /* FirestoreTaskRemoteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C723D432B31ED99F65BEA5 /* FirestoreTaskRemoteStoreTests.swift */; };
-		49563CB711A3610293BB5E55 /* UnavailableTaskRemoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFA74998E07B994126034F7D /* UnavailableTaskRemoteStore.swift */; };
-		56924FE84AE1763AC1D980EF /* TaskSyncUseCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8826BBAA603866A4F276B629 /* TaskSyncUseCaseTests.swift */; };
-		6F58758E185CF3E5BDFBB1EF /* Fakes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEFFAA381C42188AB105123 /* Fakes.swift */; };
-		9756E4E98012B0C820093AC7 /* TaskStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B6E734AA12677FBBA0A2481 /* TaskStatus.swift */; };
-		A836EE5FC99708DBBE87DBC1 /* TaskRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC575635EF3766C52F4A7469 /* TaskRepository.swift */; };
-		B15A4B4E09613301D9AA7930 /* OfflineTaskBoardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 984453C87345832DE7EB0B1A /* OfflineTaskBoardApp.swift */; };
-		BF9FA1B43C69256AE0AB0F0E /* SwiftDataTaskRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12B69E854CD0A0D23714B58E /* SwiftDataTaskRepository.swift */; };
-		D2C772CBBAFA4623462AE17C /* FirestoreTaskRemoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B81E993E675BA9F663084F1 /* FirestoreTaskRemoteStore.swift */; };
-		E91AEAF3BCD6651E492D3F29 /* SyncStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = F523C76904650F102A3BB5A3 /* SyncStatus.swift */; };
-		F30711DE815907C068A08CE9 /* TaskSyncUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4E7B088A7FD2028DB6D59D2 /* TaskSyncUseCase.swift */; };
-		F9219E1E93B501484DE6E343 /* TaskItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11553F131A76972B7CFA494D /* TaskItem.swift */; };
-		FF85E03D12BA3FBCDE7D3251 /* TaskModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C38ACBAE50913AFD2FF3E96B /* TaskModel.swift */; };
+		062ED4312B9D59FA1F44C5F8 /* SyncStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6576E220DDC2A3C3667987EA /* SyncStatus.swift */; };
+		0953067E2DB98BED8C776BF0 /* FirestoreTaskRemoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F3B1BC47AE41ECA3457830 /* FirestoreTaskRemoteStore.swift */; };
+		125A7F2A08D778F482B0AA32 /* FirestoreTaskRemoteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 083F5CBEE7EE76D6FA27B1B5 /* FirestoreTaskRemoteStoreTests.swift */; };
+		3F242221D312F1455F49C0D3 /* OfflineTaskBoardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 866781676CA43578499F14A3 /* OfflineTaskBoardApp.swift */; };
+		4AB7DA90DFE628F750413736 /* UnavailableTaskRemoteStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1F7B646121C14145786531B /* UnavailableTaskRemoteStoreTests.swift */; };
+		57B551357E53B837AEB84203 /* TaskCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581FCA83F704081109EE5919 /* TaskCardView.swift */; };
+		59A23E659CA12B05647914B1 /* TaskEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BAAAFD33315A5D7384C73EE /* TaskEditorView.swift */; };
+		6864CCB186C0FE903EC1315F /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5D93E246EB0BAAB5E3598B /* BoardView.swift */; };
+		6E168B82F4DE3F402D4378B3 /* TaskItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30B00572494DFB3ADC83D51B /* TaskItem.swift */; };
+		7939A2762B3FD78FDF285F94 /* Fakes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10A88845EA3299FCBFAB26F /* Fakes.swift */; };
+		98E5880672B1955F52828668 /* TaskColumnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E26F86168C4BC94DECFD63E /* TaskColumnView.swift */; };
+		A2E6FA394A8C23439A68E5E0 /* TaskSyncUseCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C8AE3CFD1C4ED8E1A5E641 /* TaskSyncUseCaseTests.swift */; };
+		A4CCD4B305B085B01F0DB1A8 /* AppDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A6A5B883E0711836DFB7E4 /* AppDependencies.swift */; };
+		ADA264407FEFA1C7D5DC3461 /* TaskRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F209B03CDD38A2B8F6C36E4 /* TaskRepository.swift */; };
+		BBE0E558C3ACA57D2F83E734 /* TaskSyncUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79BDDDE30F5F3B74950C92E /* TaskSyncUseCase.swift */; };
+		C004B7831D5974551B31350D /* SwiftDataTaskRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA090D2DE8D5027AACE8F16B /* SwiftDataTaskRepositoryTests.swift */; };
+		CA3999D53BD31EB1762622A4 /* BoardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 412BF943DDC1478D7F09E9E9 /* BoardViewModel.swift */; };
+		CED436D2FCE96A24ADEB051E /* TaskRemoteDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31F1333E74CA45251A060B7 /* TaskRemoteDataSource.swift */; };
+		D2F6972498A2777B9CD94CD6 /* TaskModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3720D3AD8AFDD5DF301635 /* TaskModel.swift */; };
+		D6C20D652C21542D49259FFF /* DraggableTaskID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08083EE38ACDBC388A8032C2 /* DraggableTaskID.swift */; };
+		DF9990E3A06768FD4A9ED37E /* UnavailableTaskRemoteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D05ACEAC8FC05EBB4BE740B /* UnavailableTaskRemoteStore.swift */; };
+		E6D4CEE3A382B5DE97F42173 /* TaskEditingUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51A14E629ED1D868ECB8CF7 /* TaskEditingUseCase.swift */; };
+		F295C666748F8DECE55160A7 /* SwiftDataTaskRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99071EB754F8CDF5C42CBC24 /* SwiftDataTaskRepository.swift */; };
+		F472F562E74938D49D0F3DE8 /* TaskStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D433AD2D1A56397981077E9C /* TaskStatus.swift */; };
+		F4BBBD8E9B5E36B4C8C3171D /* TaskEditingUseCaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B292EBEB186B5932DB808AE8 /* TaskEditingUseCaseTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,44 +45,51 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		059D2AA798E6D0F288F298E8 /* UnavailableTaskRemoteStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UnavailableTaskRemoteStore.swift; sourceTree = "<group>"; };
+		08083EE38ACDBC388A8032C2 /* DraggableTaskID.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DraggableTaskID.swift; sourceTree = "<group>"; };
+		083F5CBEE7EE76D6FA27B1B5 /* FirestoreTaskRemoteStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirestoreTaskRemoteStoreTests.swift; sourceTree = "<group>"; };
 		0EEFFAA381C42188AB105123 /* Fakes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Fakes.swift; sourceTree = "<group>"; };
-		10785687883475F8AC23B1D8 /* SyncStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncStatus.swift; sourceTree = "<group>"; };
 		11553F131A76972B7CFA494D /* TaskItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
 		12B69E854CD0A0D23714B58E /* SwiftDataTaskRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDataTaskRepository.swift; sourceTree = "<group>"; };
-		133090952539BF69BA960B2A /* TaskModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskModel.swift; sourceTree = "<group>"; };
-		15E3130B2F166B37014A5884 /* TaskItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
-		29811BA6732B6CBB828B6BB4 /* FirestoreTaskRemoteStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirestoreTaskRemoteStoreTests.swift; sourceTree = "<group>"; };
-		330D997819C5D142E25BA173 /* TaskRemoteDataSource.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskRemoteDataSource.swift; sourceTree = "<group>"; };
+		1BAAAFD33315A5D7384C73EE /* TaskEditorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskEditorView.swift; sourceTree = "<group>"; };
+		30B00572494DFB3ADC83D51B /* TaskItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
 		34C723D432B31ED99F65BEA5 /* FirestoreTaskRemoteStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirestoreTaskRemoteStoreTests.swift; sourceTree = "<group>"; };
-		397B02687665125AFBF33FC9 /* OfflineTaskBoardApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OfflineTaskBoardApp.swift; sourceTree = "<group>"; };
+		3E26F86168C4BC94DECFD63E /* TaskColumnView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskColumnView.swift; sourceTree = "<group>"; };
+		412BF943DDC1478D7F09E9E9 /* BoardViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoardViewModel.swift; sourceTree = "<group>"; };
 		49A21423C566BFA0D7B78D2A /* TaskRemoteDataSource.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskRemoteDataSource.swift; sourceTree = "<group>"; };
 		4B6E734AA12677FBBA0A2481 /* TaskStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskStatus.swift; sourceTree = "<group>"; };
 		54AA7F2894F6705E4FEC3394 /* TaskEditingUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskEditingUseCase.swift; sourceTree = "<group>"; };
-		6142D93C4C2DC7DF66DE2A2D /* SwiftDataTaskRepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDataTaskRepositoryTests.swift; sourceTree = "<group>"; };
+		581FCA83F704081109EE5919 /* TaskCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskCardView.swift; sourceTree = "<group>"; };
+		6576E220DDC2A3C3667987EA /* SyncStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncStatus.swift; sourceTree = "<group>"; };
 		6B81E993E675BA9F663084F1 /* FirestoreTaskRemoteStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirestoreTaskRemoteStore.swift; sourceTree = "<group>"; };
-		72E25C651BA988A14381794F /* TaskEditingUseCaseTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskEditingUseCaseTests.swift; sourceTree = "<group>"; };
-		749E82D25266BE51FC87909C /* TaskSyncUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskSyncUseCase.swift; sourceTree = "<group>"; };
-		8763667EB6A3C1E21287F704 /* UnavailableTaskRemoteStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UnavailableTaskRemoteStoreTests.swift; sourceTree = "<group>"; };
+		7F209B03CDD38A2B8F6C36E4 /* TaskRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskRepository.swift; sourceTree = "<group>"; };
+		866781676CA43578499F14A3 /* OfflineTaskBoardApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OfflineTaskBoardApp.swift; sourceTree = "<group>"; };
 		8826BBAA603866A4F276B629 /* TaskSyncUseCaseTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskSyncUseCaseTests.swift; sourceTree = "<group>"; };
-		8831C42A862C1D22DF83EADF /* SwiftDataTaskRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDataTaskRepository.swift; sourceTree = "<group>"; };
-		94C929640CAA9A4F023980DA /* Fakes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Fakes.swift; sourceTree = "<group>"; };
+		8D05ACEAC8FC05EBB4BE740B /* UnavailableTaskRemoteStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UnavailableTaskRemoteStore.swift; sourceTree = "<group>"; };
+		93A6A5B883E0711836DFB7E4 /* AppDependencies.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppDependencies.swift; sourceTree = "<group>"; };
 		984453C87345832DE7EB0B1A /* OfflineTaskBoardApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OfflineTaskBoardApp.swift; sourceTree = "<group>"; };
+		99071EB754F8CDF5C42CBC24 /* SwiftDataTaskRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDataTaskRepository.swift; sourceTree = "<group>"; };
+		A31F1333E74CA45251A060B7 /* TaskRemoteDataSource.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskRemoteDataSource.swift; sourceTree = "<group>"; };
+		A6F3B1BC47AE41ECA3457830 /* FirestoreTaskRemoteStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirestoreTaskRemoteStore.swift; sourceTree = "<group>"; };
+		A79BDDDE30F5F3B74950C92E /* TaskSyncUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskSyncUseCase.swift; sourceTree = "<group>"; };
 		B201 /* OfflineTaskBoard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = OfflineTaskBoard.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B202 /* OfflineTaskBoardTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = OfflineTaskBoardTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B292EBEB186B5932DB808AE8 /* TaskEditingUseCaseTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskEditingUseCaseTests.swift; sourceTree = "<group>"; };
 		B2B1A4CFB898E4B5167F3623 /* TaskEditingUseCaseTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskEditingUseCaseTests.swift; sourceTree = "<group>"; };
 		B4E7B088A7FD2028DB6D59D2 /* TaskSyncUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskSyncUseCase.swift; sourceTree = "<group>"; };
-		BC1787EC41069E7DE5F6EF8E /* FirestoreTaskRemoteStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FirestoreTaskRemoteStore.swift; sourceTree = "<group>"; };
+		B51A14E629ED1D868ECB8CF7 /* TaskEditingUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskEditingUseCase.swift; sourceTree = "<group>"; };
 		BC43A6B75DB937DCBA527ABC /* SwiftDataTaskRepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDataTaskRepositoryTests.swift; sourceTree = "<group>"; };
-		BF289E6953C267C4472B8AF6 /* TaskEditingUseCase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskEditingUseCase.swift; sourceTree = "<group>"; };
+		C1F7B646121C14145786531B /* UnavailableTaskRemoteStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UnavailableTaskRemoteStoreTests.swift; sourceTree = "<group>"; };
 		C38ACBAE50913AFD2FF3E96B /* TaskModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskModel.swift; sourceTree = "<group>"; };
-		CD9C136055B55E2B9B306796 /* TaskSyncUseCaseTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskSyncUseCaseTests.swift; sourceTree = "<group>"; };
+		CC3720D3AD8AFDD5DF301635 /* TaskModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskModel.swift; sourceTree = "<group>"; };
+		CC5D93E246EB0BAAB5E3598B /* BoardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
 		CE88137176DCD6CEA7BA3B2D /* UnavailableTaskRemoteStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UnavailableTaskRemoteStoreTests.swift; sourceTree = "<group>"; };
+		D433AD2D1A56397981077E9C /* TaskStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskStatus.swift; sourceTree = "<group>"; };
 		DFA74998E07B994126034F7D /* UnavailableTaskRemoteStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UnavailableTaskRemoteStore.swift; sourceTree = "<group>"; };
-		EC1D3C7F3B53FEF579DEDA91 /* TaskRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskRepository.swift; sourceTree = "<group>"; };
+		E2C8AE3CFD1C4ED8E1A5E641 /* TaskSyncUseCaseTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskSyncUseCaseTests.swift; sourceTree = "<group>"; };
 		EC575635EF3766C52F4A7469 /* TaskRepository.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskRepository.swift; sourceTree = "<group>"; };
+		F10A88845EA3299FCBFAB26F /* Fakes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Fakes.swift; sourceTree = "<group>"; };
 		F523C76904650F102A3BB5A3 /* SyncStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncStatus.swift; sourceTree = "<group>"; };
-		FF20B4D658EB50A6CAE5F2F0 /* TaskStatus.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TaskStatus.swift; sourceTree = "<group>"; };
+		FA090D2DE8D5027AACE8F16B /* SwiftDataTaskRepositoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDataTaskRepositoryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,68 +110,49 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		12AE68AA4D53497FE0F0FD1A /* OfflineTaskBoardTests */ = {
+		125D549F10E0F5E0EF8A7769 /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
-				ADD47AAD599DA50E62A63000 /* Data */,
-				52C9624780FD3CCE8D9FE5E9 /* Domain */,
-				C10F57C432009F1C14D2C381 /* Presentation */,
+				A31F1333E74CA45251A060B7 /* TaskRemoteDataSource.swift */,
+				7F209B03CDD38A2B8F6C36E4 /* TaskRepository.swift */,
 			);
-			name = OfflineTaskBoardTests;
-			path = OfflineTaskBoardTests;
+			name = Repositories;
+			path = Repositories;
 			sourceTree = "<group>";
 		};
-		145E6BA7EADBCF603FA2CA79 /* UseCases */ = {
+		25599984CC486784821BAFA4 /* Board */ = {
 			isa = PBXGroup;
 			children = (
-				BF289E6953C267C4472B8AF6 /* TaskEditingUseCase.swift */,
-				749E82D25266BE51FC87909C /* TaskSyncUseCase.swift */,
+				CC5D93E246EB0BAAB5E3598B /* BoardView.swift */,
+				412BF943DDC1478D7F09E9E9 /* BoardViewModel.swift */,
+				08083EE38ACDBC388A8032C2 /* DraggableTaskID.swift */,
+				581FCA83F704081109EE5919 /* TaskCardView.swift */,
+				3E26F86168C4BC94DECFD63E /* TaskColumnView.swift */,
 			);
-			name = UseCases;
-			path = UseCases;
+			name = Board;
+			path = Board;
 			sourceTree = "<group>";
 		};
-		32DB9B80F3B7D191C5D62E39 /* Presentation */ = {
+		32737E0937A15B1C084F876E /* Remote */ = {
 			isa = PBXGroup;
 			children = (
-				9D017B31764DEF4789287A2B /* Board */,
-				F00C726D342BD36736E14F13 /* Components */,
-				65FF7EA10397F6A71AEFB199 /* Debug */,
-				61A2ECB55EDB56D19B67898D /* TaskEditor */,
-			);
-			name = Presentation;
-			path = Presentation;
-			sourceTree = "<group>";
-		};
-		3498010A97D67A532E4EB85A /* Entities */ = {
-			isa = PBXGroup;
-			children = (
-				10785687883475F8AC23B1D8 /* SyncStatus.swift */,
-				15E3130B2F166B37014A5884 /* TaskItem.swift */,
-				FF20B4D658EB50A6CAE5F2F0 /* TaskStatus.swift */,
-			);
-			name = Entities;
-			path = Entities;
-			sourceTree = "<group>";
-		};
-		39475EBBB9F170D7532FDBD4 /* Remote */ = {
-			isa = PBXGroup;
-			children = (
-				BC1787EC41069E7DE5F6EF8E /* FirestoreTaskRemoteStore.swift */,
-				059D2AA798E6D0F288F298E8 /* UnavailableTaskRemoteStore.swift */,
+				A6F3B1BC47AE41ECA3457830 /* FirestoreTaskRemoteStore.swift */,
+				8D05ACEAC8FC05EBB4BE740B /* UnavailableTaskRemoteStore.swift */,
 			);
 			name = Remote;
 			path = Remote;
 			sourceTree = "<group>";
 		};
-		3A02D98EB9D8284019AAC4F9 /* Persistence */ = {
+		33E87CD80D30F63DE9ED7A17 /* OfflineTaskBoard */ = {
 			isa = PBXGroup;
 			children = (
-				8831C42A862C1D22DF83EADF /* SwiftDataTaskRepository.swift */,
-				133090952539BF69BA960B2A /* TaskModel.swift */,
+				3F87D676072838F564AF3FAC /* App */,
+				DDA9FCD2BDA54F4D67F73069 /* Data */,
+				E31553C90D7CB7045C666160 /* Domain */,
+				8CE1743248DAA4430343E874 /* Presentation */,
 			);
-			name = Persistence;
-			path = Persistence;
+			name = OfflineTaskBoard;
+			path = OfflineTaskBoard;
 			sourceTree = "<group>";
 		};
 		3D88DC0B8B2CE89F2B715B12 /* Remote */ = {
@@ -170,52 +165,31 @@
 			path = Remote;
 			sourceTree = "<group>";
 		};
-		3FFFF20FBFA37DA3BEEDB3C2 /* App */ = {
+		3F87D676072838F564AF3FAC /* App */ = {
 			isa = PBXGroup;
 			children = (
-				984453C87345832DE7EB0B1A /* OfflineTaskBoardApp.swift */,
+				93A6A5B883E0711836DFB7E4 /* AppDependencies.swift */,
+				866781676CA43578499F14A3 /* OfflineTaskBoardApp.swift */,
 			);
 			name = App;
 			path = App;
 			sourceTree = "<group>";
 		};
-		45747B62829674AB151AAF93 /* Data */ = {
+		40968898B27A9E13985ECF6A /* TaskEditor */ = {
 			isa = PBXGroup;
 			children = (
-				7BB075DD7A12784E68256569 /* Persistence */,
-				3D88DC0B8B2CE89F2B715B12 /* Remote */,
+				1BAAAFD33315A5D7384C73EE /* TaskEditorView.swift */,
 			);
-			name = Data;
-			path = Data;
+			name = TaskEditor;
+			path = TaskEditor;
 			sourceTree = "<group>";
 		};
-		46B3893BF081EB8705C63CC8 /* Components */ = {
+		5823549EF5088FEA8D6B8A71 /* Debug */ = {
 			isa = PBXGroup;
 			children = (
 			);
-			name = Components;
-			path = Components;
-			sourceTree = "<group>";
-		};
-		4967D2BA8F3820FA5A53FA47 /* Repositories */ = {
-			isa = PBXGroup;
-			children = (
-				330D997819C5D142E25BA173 /* TaskRemoteDataSource.swift */,
-				EC1D3C7F3B53FEF579DEDA91 /* TaskRepository.swift */,
-			);
-			name = Repositories;
-			path = Repositories;
-			sourceTree = "<group>";
-		};
-		52C9624780FD3CCE8D9FE5E9 /* Domain */ = {
-			isa = PBXGroup;
-			children = (
-				0EEFFAA381C42188AB105123 /* Fakes.swift */,
-				B2B1A4CFB898E4B5167F3623 /* TaskEditingUseCaseTests.swift */,
-				8826BBAA603866A4F276B629 /* TaskSyncUseCaseTests.swift */,
-			);
-			name = Domain;
-			path = Domain;
+			name = Debug;
+			path = Debug;
 			sourceTree = "<group>";
 		};
 		61A2ECB55EDB56D19B67898D /* TaskEditor */ = {
@@ -224,14 +198,6 @@
 			);
 			name = TaskEditor;
 			path = TaskEditor;
-			sourceTree = "<group>";
-		};
-		650F2920EC34A3A9C01B4207 /* Debug */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Debug;
-			path = Debug;
 			sourceTree = "<group>";
 		};
 		65FF7EA10397F6A71AEFB199 /* Debug */ = {
@@ -252,6 +218,28 @@
 			path = Persistence;
 			sourceTree = "<group>";
 		};
+		7D6ACB7575DBA490A19A8503 /* OfflineTaskBoardTests */ = {
+			isa = PBXGroup;
+			children = (
+				F1A7DB35257B38B3AA88E57F /* Data */,
+				7F38D7E80D740F3DBD2D8E01 /* Domain */,
+				C8DF14921B029877DD185D60 /* Presentation */,
+			);
+			name = OfflineTaskBoardTests;
+			path = OfflineTaskBoardTests;
+			sourceTree = "<group>";
+		};
+		7F38D7E80D740F3DBD2D8E01 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				F10A88845EA3299FCBFAB26F /* Fakes.swift */,
+				B292EBEB186B5932DB808AE8 /* TaskEditingUseCaseTests.swift */,
+				E2C8AE3CFD1C4ED8E1A5E641 /* TaskSyncUseCaseTests.swift */,
+			);
+			name = Domain;
+			path = Domain;
+			sourceTree = "<group>";
+		};
 		88569DADB5813947ECCCB3D1 /* UseCases */ = {
 			isa = PBXGroup;
 			children = (
@@ -262,24 +250,16 @@
 			path = UseCases;
 			sourceTree = "<group>";
 		};
-		88C41BA9F2EBF462AF8E14E9 /* OfflineTaskBoard */ = {
+		8CE1743248DAA4430343E874 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
-				3FFFF20FBFA37DA3BEEDB3C2 /* App */,
-				45747B62829674AB151AAF93 /* Data */,
-				CA1268B26DEC96FF746C899B /* Domain */,
-				32DB9B80F3B7D191C5D62E39 /* Presentation */,
+				25599984CC486784821BAFA4 /* Board */,
+				9EDB904A73DDC5CF0EB96FC2 /* Components */,
+				5823549EF5088FEA8D6B8A71 /* Debug */,
+				40968898B27A9E13985ECF6A /* TaskEditor */,
 			);
-			name = OfflineTaskBoard;
-			path = OfflineTaskBoard;
-			sourceTree = "<group>";
-		};
-		8E2C0377EB878A1008A76F8A /* TaskEditor */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = TaskEditor;
-			path = TaskEditor;
+			name = Presentation;
+			path = Presentation;
 			sourceTree = "<group>";
 		};
 		9D017B31764DEF4789287A2B /* Board */ = {
@@ -290,15 +270,22 @@
 			path = Board;
 			sourceTree = "<group>";
 		};
-		ADD47AAD599DA50E62A63000 /* Data */ = {
+		9EDB904A73DDC5CF0EB96FC2 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				34C723D432B31ED99F65BEA5 /* FirestoreTaskRemoteStoreTests.swift */,
-				BC43A6B75DB937DCBA527ABC /* SwiftDataTaskRepositoryTests.swift */,
-				CE88137176DCD6CEA7BA3B2D /* UnavailableTaskRemoteStoreTests.swift */,
 			);
-			name = Data;
-			path = Data;
+			name = Components;
+			path = Components;
+			sourceTree = "<group>";
+		};
+		A926758C2D64FA77C46A4489 /* UseCases */ = {
+			isa = PBXGroup;
+			children = (
+				B51A14E629ED1D868ECB8CF7 /* TaskEditingUseCase.swift */,
+				A79BDDDE30F5F3B74950C92E /* TaskSyncUseCase.swift */,
+			);
+			name = UseCases;
+			path = UseCases;
 			sourceTree = "<group>";
 		};
 		B71BC6E2B7BE6AA3D7E2FB28 /* Entities */ = {
@@ -316,8 +303,8 @@
 			isa = PBXGroup;
 			children = (
 				C004 /* Products */,
-				88C41BA9F2EBF462AF8E14E9 /* OfflineTaskBoard */,
-				12AE68AA4D53497FE0F0FD1A /* OfflineTaskBoardTests */,
+				33E87CD80D30F63DE9ED7A17 /* OfflineTaskBoard */,
+				7D6ACB7575DBA490A19A8503 /* OfflineTaskBoardTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -330,14 +317,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C10F57C432009F1C14D2C381 /* Presentation */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Presentation;
-			path = Presentation;
-			sourceTree = "<group>";
-		};
 		C5106219432B88B5EE3BA39D /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
@@ -348,23 +327,33 @@
 			path = Repositories;
 			sourceTree = "<group>";
 		};
-		CA1268B26DEC96FF746C899B /* Domain */ = {
+		C8DF14921B029877DD185D60 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
-				B71BC6E2B7BE6AA3D7E2FB28 /* Entities */,
-				C5106219432B88B5EE3BA39D /* Repositories */,
-				88569DADB5813947ECCCB3D1 /* UseCases */,
+			);
+			name = Presentation;
+			path = Presentation;
+			sourceTree = "<group>";
+		};
+		DDA9FCD2BDA54F4D67F73069 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				F795976674FB25744F496527 /* Persistence */,
+				32737E0937A15B1C084F876E /* Remote */,
+			);
+			name = Data;
+			path = Data;
+			sourceTree = "<group>";
+		};
+		E31553C90D7CB7045C666160 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				F2791739825A15DB7E3F7C54 /* Entities */,
+				125D549F10E0F5E0EF8A7769 /* Repositories */,
+				A926758C2D64FA77C46A4489 /* UseCases */,
 			);
 			name = Domain;
 			path = Domain;
-			sourceTree = "<group>";
-		};
-		E1F2A788A2D7AF9773BBEE6E /* Board */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Board;
-			path = Board;
 			sourceTree = "<group>";
 		};
 		F00C726D342BD36736E14F13 /* Components */ = {
@@ -373,6 +362,38 @@
 			);
 			name = Components;
 			path = Components;
+			sourceTree = "<group>";
+		};
+		F1A7DB35257B38B3AA88E57F /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				083F5CBEE7EE76D6FA27B1B5 /* FirestoreTaskRemoteStoreTests.swift */,
+				FA090D2DE8D5027AACE8F16B /* SwiftDataTaskRepositoryTests.swift */,
+				C1F7B646121C14145786531B /* UnavailableTaskRemoteStoreTests.swift */,
+			);
+			name = Data;
+			path = Data;
+			sourceTree = "<group>";
+		};
+		F2791739825A15DB7E3F7C54 /* Entities */ = {
+			isa = PBXGroup;
+			children = (
+				6576E220DDC2A3C3667987EA /* SyncStatus.swift */,
+				30B00572494DFB3ADC83D51B /* TaskItem.swift */,
+				D433AD2D1A56397981077E9C /* TaskStatus.swift */,
+			);
+			name = Entities;
+			path = Entities;
+			sourceTree = "<group>";
+		};
+		F795976674FB25744F496527 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				99071EB754F8CDF5C42CBC24 /* SwiftDataTaskRepository.swift */,
+				CC3720D3AD8AFDD5DF301635 /* TaskModel.swift */,
+			);
+			name = Persistence;
+			path = Persistence;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -443,18 +464,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B15A4B4E09613301D9AA7930 /* OfflineTaskBoardApp.swift in Sources */,
-				BF9FA1B43C69256AE0AB0F0E /* SwiftDataTaskRepository.swift in Sources */,
-				FF85E03D12BA3FBCDE7D3251 /* TaskModel.swift in Sources */,
-				D2C772CBBAFA4623462AE17C /* FirestoreTaskRemoteStore.swift in Sources */,
-				49563CB711A3610293BB5E55 /* UnavailableTaskRemoteStore.swift in Sources */,
-				E91AEAF3BCD6651E492D3F29 /* SyncStatus.swift in Sources */,
-				F9219E1E93B501484DE6E343 /* TaskItem.swift in Sources */,
-				9756E4E98012B0C820093AC7 /* TaskStatus.swift in Sources */,
-				0C1D0BF72B07450CA4EE56DC /* TaskRemoteDataSource.swift in Sources */,
-				A836EE5FC99708DBBE87DBC1 /* TaskRepository.swift in Sources */,
-				04D5AA531F7647BDF9682481 /* TaskEditingUseCase.swift in Sources */,
-				F30711DE815907C068A08CE9 /* TaskSyncUseCase.swift in Sources */,
+				A4CCD4B305B085B01F0DB1A8 /* AppDependencies.swift in Sources */,
+				3F242221D312F1455F49C0D3 /* OfflineTaskBoardApp.swift in Sources */,
+				F295C666748F8DECE55160A7 /* SwiftDataTaskRepository.swift in Sources */,
+				D2F6972498A2777B9CD94CD6 /* TaskModel.swift in Sources */,
+				0953067E2DB98BED8C776BF0 /* FirestoreTaskRemoteStore.swift in Sources */,
+				DF9990E3A06768FD4A9ED37E /* UnavailableTaskRemoteStore.swift in Sources */,
+				062ED4312B9D59FA1F44C5F8 /* SyncStatus.swift in Sources */,
+				6E168B82F4DE3F402D4378B3 /* TaskItem.swift in Sources */,
+				F472F562E74938D49D0F3DE8 /* TaskStatus.swift in Sources */,
+				CED436D2FCE96A24ADEB051E /* TaskRemoteDataSource.swift in Sources */,
+				ADA264407FEFA1C7D5DC3461 /* TaskRepository.swift in Sources */,
+				E6D4CEE3A382B5DE97F42173 /* TaskEditingUseCase.swift in Sources */,
+				BBE0E558C3ACA57D2F83E734 /* TaskSyncUseCase.swift in Sources */,
+				6864CCB186C0FE903EC1315F /* BoardView.swift in Sources */,
+				CA3999D53BD31EB1762622A4 /* BoardViewModel.swift in Sources */,
+				D6C20D652C21542D49259FFF /* DraggableTaskID.swift in Sources */,
+				57B551357E53B837AEB84203 /* TaskCardView.swift in Sources */,
+				98E5880672B1955F52828668 /* TaskColumnView.swift in Sources */,
+				59A23E659CA12B05647914B1 /* TaskEditorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,12 +490,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3CAF4E8846E5AB6C5FCB4251 /* FirestoreTaskRemoteStoreTests.swift in Sources */,
-				1A68A4390C97A89AFFE7DF28 /* SwiftDataTaskRepositoryTests.swift in Sources */,
-				2167DE1C3BEF4AC5871187AB /* UnavailableTaskRemoteStoreTests.swift in Sources */,
-				6F58758E185CF3E5BDFBB1EF /* Fakes.swift in Sources */,
-				14DF884A39F405A02DD6008A /* TaskEditingUseCaseTests.swift in Sources */,
-				56924FE84AE1763AC1D980EF /* TaskSyncUseCaseTests.swift in Sources */,
+				125A7F2A08D778F482B0AA32 /* FirestoreTaskRemoteStoreTests.swift in Sources */,
+				C004B7831D5974551B31350D /* SwiftDataTaskRepositoryTests.swift in Sources */,
+				4AB7DA90DFE628F750413736 /* UnavailableTaskRemoteStoreTests.swift in Sources */,
+				7939A2762B3FD78FDF285F94 /* Fakes.swift in Sources */,
+				F4BBBD8E9B5E36B4C8C3171D /* TaskEditingUseCaseTests.swift in Sources */,
+				A2E6FA394A8C23439A68E5E0 /* TaskSyncUseCaseTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
