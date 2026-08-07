@@ -13,6 +13,7 @@ final class BoardViewModel: ObservableObject {
     @Published private(set) var syncSummaryMessage = "Not synced yet"
     @Published private(set) var isSyncing = false
     @Published var errorMessage: String?
+    @Published var selectedStatus: TaskStatus = .todo
 
     private let editing: TaskEditingUseCase
     private let sync: TaskSyncUseCase
@@ -50,18 +51,16 @@ final class BoardViewModel: ObservableObject {
         perform { try editing.moveTask(task, to: status) }
     }
 
-    /// Drag-and-drop lands here: `beforeID` is the card the dragged task was dropped on (insert
-    /// before it), or `nil` when dropped in the column's empty trailing area (append to the end).
-    /// Handles a same-column reorder and a cross-column move identically.
-    func moveDraggedTask(id draggedID: UUID, into status: TaskStatus, before beforeID: UUID?) {
-        guard let dragged = tasks.first(where: { $0.id == draggedID }) else { return }
-        var columnIDs = tasks(in: status).filter { $0.id != draggedID }.map(\.id)
-        if let beforeID, let index = columnIDs.firstIndex(of: beforeID) {
-            columnIDs.insert(draggedID, at: index)
-        } else {
-            columnIDs.append(draggedID)
-        }
-        perform { try editing.placeTask(dragged, in: status, orderedIDs: columnIDs) }
+    /// List-driven reorder within whichever status tab is currently visible. `source`/`destination`
+    /// come straight from SwiftUI's `.onMove`, so this is only ever a same-status reorder — moving
+    /// a task to a different status happens through the "Move to" menu instead.
+    func reorderCurrentTasks(source: IndexSet, destination: Int) {
+        let current = tasks(in: selectedStatus)
+        guard let sourceIndex = source.first, source.count == 1, sourceIndex < current.count else { return }
+        var orderedIDs = current.map(\.id)
+        orderedIDs.move(fromOffsets: source, toOffset: destination)
+        let movedTask = current[sourceIndex]
+        perform { try editing.placeTask(movedTask, in: selectedStatus, orderedIDs: orderedIDs) }
     }
 
     func syncNow() async {
