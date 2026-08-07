@@ -15,6 +15,7 @@ struct BoardView: View {
     @State private var editMode: EditMode = .inactive
     @State private var searchText = ""
     @State private var taskPendingDeletion: TaskItem?
+    @FocusState private var isSearchFocused: Bool
 
     /// Drives `.sheet(item:)` rather than `.sheet(isPresented:)` + a separate `TaskItem?`: setting
     /// both a boolean and the task in the same action left the sheet's content occasionally
@@ -47,6 +48,7 @@ struct BoardView: View {
                     addTaskButton
                 }
                 .padding(.horizontal)
+                .simultaneousGesture(TapGesture().onEnded { isSearchFocused = false })
                 searchField
                 taskList
             }
@@ -73,17 +75,16 @@ struct BoardView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-        .confirmationDialog(
+        .alert(
             "Delete \u{201C}\(taskPendingDeletion?.title ?? "")\u{201D}?",
-            isPresented: deletionBinding,
-            titleVisibility: .visible
+            isPresented: deletionBinding
         ) {
+            Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) {
                 if let task = taskPendingDeletion {
                     deleteWithAnimation(task)
                 }
             }
-            Button("Cancel", role: .cancel) {}
         }
     }
 
@@ -133,6 +134,11 @@ struct BoardView: View {
         .scrollContentBackground(.hidden)
         .animation(.easeInOut(duration: 0.25), value: viewModel.tasks)
         .environment(\.editMode, $editMode)
+        // A TextField doesn't resign focus just because the user taps something else — without
+        // this, the search field's cursor/keyboard stayed active (and could steal the next tap)
+        // even while editing, deleting, or reordering a task. `simultaneousGesture` lets this
+        // fire alongside whatever the tapped row/button already does, rather than intercepting it.
+        .simultaneousGesture(TapGesture().onEnded { isSearchFocused = false })
     }
 
     /// Search-filtered, then a stable partition that sinks `.done` tasks to the bottom without
@@ -157,6 +163,7 @@ struct BoardView: View {
             TextField("Search tasks", text: $searchText)
                 .textFieldStyle(.plain)
                 .autocorrectionDisabled()
+                .focused($isSearchFocused)
             if !searchText.isEmpty {
                 Button {
                     searchText = ""
@@ -200,6 +207,7 @@ struct BoardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal)
         .padding(.top, 8)
+        .simultaneousGesture(TapGesture().onEnded { isSearchFocused = false })
     }
 
     private var errorBinding: Binding<Bool> {
