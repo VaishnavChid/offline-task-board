@@ -9,16 +9,36 @@ An offline-first iOS task board — Every action (create, edit, move, reorder, d
 
 ## Architecture
 
-MVVM + Clean Architecture, deliberately **sized to the problem** rather than maximal — a single-entity task board doesn't have enough distinct business logic per CRUD verb to justify one class per action, so the domain layer uses two cohesive use cases instead of eight thin ones.
+MVVM + Clean Architecture, deliberately **sized to the problem** rather than maximal — a single-entity task board doesn't have enough distinct business logic per CRUD verb to justify one class per action, so the domain layer uses two cohesive use cases instead of eight thin ones. Dependencies point inward: Presentation depends on the use cases, the use cases depend only on protocols, and Data is the only layer that knows a concrete storage/network technology exists.
 
-```
-Presentation                Domain                          Data
-─────────────                ──────                          ────
-BoardView            →      TaskEditingUseCase        →     SwiftDataTaskRepository → SwiftData
-BoardViewModel        →     TaskSyncUseCase            →     FirestoreTaskRemoteStore → Firestore
-TaskCardView, ...                  ↑                          UnavailableTaskRemoteStore (fallback)
-                          TaskRepository /
-                          TaskRemoteDataSource (protocols)
+```mermaid
+flowchart LR
+    subgraph Presentation
+        BV["BoardView / TaskCardView"]
+        VM["BoardViewModel"]
+    end
+    subgraph Domain
+        EU["TaskEditingUseCase"]
+        SU["TaskSyncUseCase"]
+        RP(["TaskRepository\nprotocol"])
+        RD(["TaskRemoteDataSource\nprotocol"])
+    end
+    subgraph Data
+        SD["SwiftDataTaskRepository"]
+        FS["FirestoreTaskRemoteStore"]
+        UN["UnavailableTaskRemoteStore\nfallback"]
+    end
+
+    BV --> VM --> EU
+    VM --> SU
+    EU --> RP
+    SU --> RP
+    SU --> RD
+    SD -.implements.-> RP
+    FS -.implements.-> RD
+    UN -.implements.-> RD
+    SD --> SwiftData[("SwiftData")]
+    FS --> Firestore[("Firestore")]
 ```
 
 - **Domain** (`OfflineTaskBoard/Domain`) — `TaskItem`, `TaskStatus`, `SyncStatus` are plain Swift, no SwiftData/Firestore imports. `TaskRepository` and `TaskRemoteDataSource` are the only interfaces anything above Data depends on. `TaskEditingUseCase` covers create/update/delete/restore/move/reorder; `TaskSyncUseCase` owns the outbox, remote pulls, and conflict resolution — both fully unit-testable with in-memory fakes, no framework involved.
@@ -28,9 +48,36 @@ TaskCardView, ...                  ↑                          UnavailableTaskR
 
 ## Key technical decisions
 
-- **Outbox via `SyncStatus`** (`synced` / `pendingUpload` / `pendingDelete` / `failed` / `conflicted`) on every task, plus soft-delete tombstones (`isDeleted`) so a delete can be undone before it's confirmed remotely and the remote always finds out about it.
+- **Outbox via `SyncStatus`** (`synced` / `pendingUpload` / `pendingDelete` / `failed` / `conflicted`) on every task, plus soft-delete tombstones (`isDeleted`) so a delete can be undone before it's confirmed remotely and the remote always finds out about it. The delete path end-to-end:
+
+  ```mermaid
+  flowchart LR
+      A["User taps Delete"] --> B["deleteTask()\nisDeleted = true\nsyncStatus = .pendingDelete"]
+      B --> C["loadBoard() filters it out —\ncard disappears immediately"]
+      C --> D["drainOutbox() finds it pending"]
+      D --> E{"remote.delete() succeeds?"}
+      E -- yes --> F["repository.hardDelete() —\nrow removed from SwiftData"]
+      E -- no --> G["mark .failed —\nretried on next sync"]
+  ```
+
 - **Per-task failure isolation, both directions.** Each pending task's push happens in its own try/catch inside `TaskSyncUseCase`, so one task failing to sync can never block the rest of the outbox. The pull side mirrors this: `FirestoreTaskRemoteStore.fetchAll()` decodes each document independently and skips (rather than fails on) a malformed one, so one bad document from the cloud can't block every other task from being pulled.
-- **Conflict policy:** each task tracks `lastSyncedUpdatedAt` — the remote timestamp as of the last confirmed sync. `sync()` pulls remote state *before* draining the outbox, specifically so a pending local edit gets compared against the current remote before it's pushed — pushing first would let an unconditional `setData` blindly overwrite a concurrent remote edit with no comparison at all, which is exactly what an earlier version of this did (caught by testing it live against the real Firestore project, not just the unit tests — the artificial state the original conflict test constructed was never actually reachable from the app's own code paths). If remote and local both changed since the baseline, it's a genuine conflict: local wins and gets marked `.conflicted`, and the outbox drain right after pushes it — so it resolves within the same sync pass — with the sync summary telling the user a conflict happened ("resolved 1 conflict in your favor"), not just silently overwriting. If only one side changed, that side's version applies with no conflict. If a task is mid-delete locally, that always wins outright regardless of a concurrent remote edit.
+- **Conflict policy:** each task tracks `lastSyncedUpdatedAt`, the remote timestamp as of the last confirmed sync. `sync()` pulls remote state *before* draining the outbox — pushing first would let an unconditional `setData` blindly overwrite a concurrent remote edit with no comparison at all (caught live against the real Firestore project, not just the unit tests — the earlier push-first ordering let this exact scenario through undetected). Per remote task, on pull:
+
+  ```mermaid
+  flowchart TD
+      A["pullRemote: for each remote task"] --> B{"Local row exists?"}
+      B -- no --> C["Insert as new, mark .synced"]
+      B -- yes --> D{"Local is .pendingDelete?"}
+      D -- yes --> E["Skip — a mid-delete task\nalways wins outright"]
+      D -- no --> F{"Remote changed\nsince baseline?"}
+      F -- no --> G["Skip — nothing to reconcile"]
+      F -- yes --> H{"Local changed\nsince baseline too?"}
+      H -- no --> I["Adopt remote, mark .synced"]
+      H -- yes --> J["Conflict: local wins,\nmark .conflicted"]
+      J --> K["drainOutbox pushes it —\nresolves within this same sync pass"]
+  ```
+
+  The sync summary tells the user when this happened ("resolved 1 conflict in your favor") rather than silently overwriting.
 - **Drag-to-reorder** via SwiftUI List's native `onMove`, gated behind a compact edit-mode toggle in the header (not a full `EditButton()` text label) — swipe-to-delete and the "..." menu handle the rest, so the toggle only appears when you actually want to reorder.
 - **iOS 26 Liquid Glass styling** throughout (`glassEffect`, the platform's default floating tab/toolbar treatment) since iOS 26 was the only SDK available.
 - **A `RootView` gates the board behind a splash screen tied to real startup work**, not a fixed delay — it owns the single `BoardViewModel`, runs the initial `load()` + `syncNow()`, and only then reveals `BoardView`. The splash itself reuses the three status tint colors as a gradient, so the first thing shown already hints at what the app does. Status changes, the sync badge, and row insert/delete are lightly animated for the same reason — not core requirements, but the app builds toward "reorder" and other affordances more convincingly when state changes read as intentional rather than instant.
