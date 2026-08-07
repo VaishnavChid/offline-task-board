@@ -84,11 +84,25 @@ final class BoardViewModel: ObservableObject {
         do {
             try action()
             load()
+            syncSoon()
         } catch let validationError as TaskValidationError {
             errorMessage = validationError.errorDescription
         } catch {
             errorMessage = "Something went wrong saving that change. Your other tasks are safe."
         }
+    }
+
+    /// Fires a sync right after every local edit, rather than waiting for the user to notice and
+    /// tap "Sync" or for the next app launch — while the app is open and online, changes should
+    /// reach the server immediately, not just "eventually." No reachability check first: a sync
+    /// attempted while offline already fails harmlessly into the existing `.failed` retry path,
+    /// so there's nothing extra to guard against. Not debounced — a rapid burst of edits fires one
+    /// sync per edit, which costs some redundant Firestore reads but keeps every edit's own sync
+    /// attempt independent, so none of them can get silently skipped by a coalescing window.
+    /// Deliberately not true background sync (via `BGTaskScheduler`) — that's for while the app is
+    /// suspended, which is a separate, larger brownie-point feature this doesn't attempt.
+    private func syncSoon() {
+        Task { await syncNow() }
     }
 
     private func message(for summary: SyncSummary) -> String {
