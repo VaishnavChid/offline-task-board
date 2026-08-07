@@ -25,11 +25,22 @@ actor RecordingRemoteDataSource: TaskRemoteDataSource {
     private(set) var deletedIDs: [UUID] = []
     private var stubbedFetch: [TaskItem] = []
     private var failingIDs: Set<UUID> = []
+    /// Consumed by the next `fetchAll()` call only — simulates a slow network read that resolves
+    /// after other, faster work (like a concurrent sync's delete) has already run.
+    private var nextFetchDelayNanoseconds: UInt64 = 0
 
     func stubFetch(_ tasks: [TaskItem]) { stubbedFetch = tasks }
     func failSaving(id: UUID) { failingIDs.insert(id) }
+    func delayNextFetch(nanoseconds: UInt64) { nextFetchDelayNanoseconds = nanoseconds }
 
-    func fetchAll() async throws -> [TaskItem] { stubbedFetch }
+    func fetchAll() async throws -> [TaskItem] {
+        let delay = nextFetchDelayNanoseconds
+        nextFetchDelayNanoseconds = 0
+        if delay > 0 {
+            try await Task.sleep(nanoseconds: delay)
+        }
+        return stubbedFetch
+    }
 
     func save(_ task: TaskItem) async throws {
         if failingIDs.contains(task.id) { throw RemoteDataSourceError.notConfigured }
@@ -38,6 +49,10 @@ actor RecordingRemoteDataSource: TaskRemoteDataSource {
 
     func delete(id: UUID) async throws {
         deletedIDs.append(id)
+        // A real backend reflects a completed delete on the very next fresh read — a stub that
+        // stayed static here would let a later, non-delayed fetch see a document that a real
+        // Firestore read wouldn't, which isn't the race this fake exists to model.
+        stubbedFetch.removeAll { $0.id == id }
     }
 }
 

@@ -199,6 +199,49 @@ final class TaskSyncUseCaseTests: XCTestCase {
         XCTAssertEqual(try repository.allTasks().first?.title, "New title from server")
     }
 
+    /// Reproduces a real bug reported against the running app: delete a task, and it visually
+    /// slides away, then reappears — still "Synced" — with the Firestore document never actually
+    /// removed. The app fires an immediate sync on every edit (see README Trade-offs) *and* an
+    /// initial sync on launch, so two `sync()` passes can genuinely overlap: one whose slow
+    /// `fetchAll()` was already in flight before the delete happened, resolving only after a
+    /// second, faster pass has pushed the delete and hard-purged the row locally. When that first
+    /// pass's stale fetch finally resolves, `pullRemote` finds no local row for that ID anymore —
+    /// indistinguishable from "a task that's brand new from another device" — and blindly
+    /// resurrects it via `repository.upsert(remoteTask)`, which hardcodes `isDeleted: false` and
+    /// `.synced`. This test drives two real, concurrently-running `sync()` calls against the same
+    /// use case to reproduce that interleaving deterministically.
+    func testConcurrentSyncDoesNotResurrectATaskDeletedByAnOverlappingSync() async throws {
+        var task = TaskItem(title: "Delete me", status: .todo, sortOrder: 0, syncStatus: .synced)
+        task.lastSyncedUpdatedAt = task.updatedAt
+        try repository.upsert(task)
+        // The stale snapshot a slow, already-in-flight fetch would have queued up — issued before
+        // the delete happened, so the server still shows the task as present.
+        await remote.stubFetch([task])
+
+        // Sync A: like the app's launch sync — starts first, but its fetch is slow.
+        await remote.delayNextFetch(nanoseconds: 100_000_000)
+        let syncA = Task { await self.useCase.sync() }
+
+        // Give sync A a moment to enter `fetchAll()` before sync B starts, mirroring the real
+        // timeline (launch sync already mid-flight when the user's delete fires its own sync).
+        try await Task.sleep(nanoseconds: 10_000_000)
+
+        // The user deletes the task locally, then the on-edit sync fires — sync B's own fetch has
+        // no delay, so it completes, pulls (correctly skipping the now-pendingDelete task), pushes
+        // the delete, and hard-purges the local row, all before sync A's fetch resolves.
+        task.isDeleted = true
+        task.syncStatus = .pendingDelete
+        try repository.upsert(task)
+        let syncB = Task { await self.useCase.sync() }
+
+        _ = await (syncA.value, syncB.value)
+
+        XCTAssertTrue(
+            try repository.allTasks().isEmpty,
+            "a task deleted by one sync pass must not be resurrected by another pass's stale, already-in-flight fetch"
+        )
+    }
+
     func testSyncSurvivesRemoteFetchFailureWithoutLosingLocalState() async throws {
         let task = TaskItem(title: "Stays local", status: .todo, sortOrder: 0, syncStatus: .synced)
         try repository.upsert(task)

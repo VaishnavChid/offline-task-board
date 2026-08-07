@@ -24,6 +24,8 @@ struct SyncSummary: Equatable {
 final class TaskSyncUseCase {
     private let repository: TaskRepository
     private let remote: TaskRemoteDataSource
+    private var inFlightSync: Task<SyncSummary, Never>?
+    private var followUpRequested = false
 
     init(repository: TaskRepository, remote: TaskRemoteDataSource) {
         self.repository = repository
@@ -40,12 +42,45 @@ final class TaskSyncUseCase {
     ///
     /// Each pending task is pushed independently: one task failing must never block the rest of
     /// the outbox from syncing (the bug this replaces let a single failure abort the whole batch).
-    @discardableResult
-    func sync() async -> SyncSummary {
+    ///
+    /// Calls never actually run two passes concurrently — see `sync()` below, which coalesces
+    /// overlapping calls instead. A genuine second, fully-concurrent pass could resurrect a task:
+    /// a slow pass's `fetchAll()` can resolve *after* a faster, later-started pass has already
+    /// pushed a delete and hard-purged the local row, at which point "no local row for this ID"
+    /// is indistinguishable from "a brand-new task from another device," so `pullRemote` would
+    /// blindly re-insert it as `.synced`. Found live: deleting a task while an earlier sync (e.g.
+    /// the one on launch) was still in flight made the card slide away, then reappear as "Synced,"
+    /// with the Firestore document never actually deleted.
+    private func runSync() async -> SyncSummary {
         var summary = SyncSummary()
         await pullRemote(into: &summary)
         await drainOutbox(into: &summary)
         return summary
+    }
+
+    /// Coalesces overlapping calls into a single in-flight pass instead of letting them race: a
+    /// caller that arrives while a pass is already running just awaits that pass's result rather
+    /// than starting a second, truly-concurrent one. If anything asked for a sync while the pass
+    /// was running, one more pass runs immediately after — so whatever prompted that extra call
+    /// (e.g. an edit that landed after the in-flight pass had already read the outbox) still gets
+    /// synced promptly, just serialized after the first pass rather than racing it.
+    @discardableResult
+    func sync() async -> SyncSummary {
+        if let inFlightSync {
+            followUpRequested = true
+            return await inFlightSync.value
+        }
+
+        let task = Task { await runSync() }
+        inFlightSync = task
+        let result = await task.value
+        inFlightSync = nil
+
+        if followUpRequested {
+            followUpRequested = false
+            return await sync()
+        }
+        return result
     }
 
     private func drainOutbox(into summary: inout SyncSummary) async {
