@@ -11,6 +11,7 @@ struct BoardView: View {
     @StateObject private var viewModel: BoardViewModel
     @State private var showingEditor = false
     @State private var editingTask: TaskItem?
+    @State private var editMode: EditMode = .inactive
 
     init(viewModel: BoardViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -26,28 +27,12 @@ struct BoardView: View {
 
             VStack(spacing: 12) {
                 header
-                syncStatusBar
-                    .padding(.horizontal)
-
-                TabView(selection: $viewModel.selectedStatus) {
-                    ForEach(TaskStatus.allCases) { status in
-                        Tab(status.title, systemImage: status.symbolName, value: status) {
-                            StatusPageView(
-                                status: status,
-                                tasks: viewModel.tasks(in: status),
-                                onEdit: { task in
-                                    editingTask = task
-                                    showingEditor = true
-                                },
-                                onDelete: { task in viewModel.deleteTask(task) },
-                                onMove: { task, destination in viewModel.moveTask(task, to: destination) },
-                                onReorder: { source, destination in
-                                    viewModel.reorderCurrentTasks(source: source, destination: destination)
-                                }
-                            )
-                        }
-                    }
+                HStack(spacing: 12) {
+                    syncStatusBar
+                    addTaskButton
                 }
+                .padding(.horizontal)
+                taskList
             }
         }
         .sheet(isPresented: $showingEditor) {
@@ -55,7 +40,7 @@ struct BoardView: View {
                 if let editingTask {
                     viewModel.updateTask(editingTask, title: title, notes: notes)
                 } else {
-                    viewModel.createTask(title: title, notes: notes, status: viewModel.selectedStatus)
+                    viewModel.createTask(title: title, notes: notes, status: .todo)
                 }
             }
         }
@@ -70,19 +55,57 @@ struct BoardView: View {
         }
     }
 
+    /// One flat list instead of grouping by status — a status with many tasks no longer buries
+    /// the others further down the screen. Order is a single global `sortOrder` (drag to
+    /// reorder via the toolbar button below); status is shown per-card via the tappable icon
+    /// (advances the workflow) and the small badge on its second line, not by position.
+    private var taskList: some View {
+        List {
+            ForEach(viewModel.tasks) { task in
+                TaskCardView(
+                    task: task,
+                    onEdit: {
+                        editingTask = task
+                        showingEditor = true
+                    },
+                    onDelete: { viewModel.deleteTask(task) },
+                    onMove: { destination in viewModel.moveTask(task, to: destination) },
+                    onAdvanceStatus: { viewModel.advanceStatus(of: task) }
+                )
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) { viewModel.deleteTask(task) } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                    .tint(.red)
+                }
+            }
+            .onMove { source, destination in
+                viewModel.reorderTasks(source: source, destination: destination)
+            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .environment(\.editMode, $editMode)
+    }
+
     private var header: some View {
         HStack {
             Text("Task Board")
                 .font(.system(size: 30, weight: .bold, design: .rounded))
             Spacer()
             Button {
-                editingTask = nil
-                showingEditor = true
+                editMode = editMode == .active ? .inactive : .active
             } label: {
-                Label("Add Task", systemImage: "plus")
+                Image(systemName: editMode == .active ? "checkmark.circle.fill" : "arrow.up.arrow.down.circle")
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
             }
-            .accessibilityLabel("Add task")
+            .accessibilityLabel(editMode == .active ? "Done reordering" : "Reorder tasks")
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal)
         .padding(.top, 8)
     }
@@ -108,5 +131,21 @@ struct BoardView: View {
         }
         .padding(12)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    /// Deliberately outside the sync card — adding a task and checking sync status are unrelated
+    /// actions and shouldn't share one container.
+    private var addTaskButton: some View {
+        Button {
+            editingTask = nil
+            showingEditor = true
+        } label: {
+            Image(systemName: "plus")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.white)
+                .frame(width: 44, height: 44)
+                .background(Color.blue, in: Circle())
+        }
+        .accessibilityLabel("Add task")
     }
 }

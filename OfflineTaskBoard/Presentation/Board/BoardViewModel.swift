@@ -13,7 +13,6 @@ final class BoardViewModel: ObservableObject {
     @Published private(set) var syncSummaryMessage = "Not synced yet"
     @Published private(set) var isSyncing = false
     @Published var errorMessage: String?
-    @Published var selectedStatus: TaskStatus = .todo
 
     private let editing: TaskEditingUseCase
     private let sync: TaskSyncUseCase
@@ -29,10 +28,6 @@ final class BoardViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
-    }
-
-    func tasks(in status: TaskStatus) -> [TaskItem] {
-        tasks.filter { $0.status == status }.sorted { $0.sortOrder < $1.sortOrder }
     }
 
     func createTask(title: String, notes: String, status: TaskStatus) {
@@ -51,16 +46,23 @@ final class BoardViewModel: ObservableObject {
         perform { try editing.moveTask(task, to: status) }
     }
 
-    /// List-driven reorder within whichever status tab is currently visible. `source`/`destination`
-    /// come straight from SwiftUI's `.onMove`, so this is only ever a same-status reorder — moving
-    /// a task to a different status happens through the "Move to" menu instead.
-    func reorderCurrentTasks(source: IndexSet, destination: Int) {
-        let current = tasks(in: selectedStatus)
-        guard let sourceIndex = source.first, source.count == 1, sourceIndex < current.count else { return }
-        var orderedIDs = current.map(\.id)
+    /// The status icon on each card cycles forward through the workflow — todo -> inProgress ->
+    /// done -> todo — so changing a task's state never requires opening the "..." menu at all.
+    func advanceStatus(of task: TaskItem) {
+        let all = TaskStatus.allCases
+        guard let index = all.firstIndex(of: task.status) else { return }
+        let next = all[(index + 1) % all.count]
+        moveTask(task, to: next)
+    }
+
+    /// List-driven reorder of the whole flat board. `source`/`destination` come straight from
+    /// SwiftUI's `.onMove` — `tasks` is already the global, sortOrder-driven display order, so
+    /// this reorders across statuses exactly the same way as within one.
+    func reorderTasks(source: IndexSet, destination: Int) {
+        guard let sourceIndex = source.first, source.count == 1, sourceIndex < tasks.count else { return }
+        var orderedIDs = tasks.map(\.id)
         orderedIDs.move(fromOffsets: source, toOffset: destination)
-        let movedTask = current[sourceIndex]
-        perform { try editing.placeTask(movedTask, in: selectedStatus, orderedIDs: orderedIDs) }
+        perform { try editing.reorderTasks(orderedIDs: orderedIDs) }
     }
 
     func syncNow() async {

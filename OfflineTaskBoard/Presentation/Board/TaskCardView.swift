@@ -12,39 +12,62 @@ struct TaskCardView: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
     let onMove: (TaskStatus) -> Void
+    let onAdvanceStatus: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top, spacing: 8) {
-                Text(task.title)
-                    .font(.headline)
-                    .lineLimit(2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        HStack(alignment: .top, spacing: 12) {
+            Button(action: onAdvanceStatus) {
+                Image(systemName: task.status.symbolName)
+                    .font(.title2)
+                    .foregroundStyle(task.status.tintColor)
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Status: \(task.status.title)")
+            .accessibilityHint("Double tap to advance to the next status")
 
-                Menu {
-                    Section("Move to") {
-                        ForEach(TaskStatus.allCases.filter { $0 != task.status }) { status in
-                            Button(status.title) { onMove(status) }
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: 8) {
+                    Text(task.title)
+                        .font(.headline)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Menu {
+                        Section("Move to") {
+                            ForEach(TaskStatus.allCases.filter { $0 != task.status }) { status in
+                                Button(status.title) { onMove(status) }
+                            }
                         }
+                        Button("Edit", systemImage: "pencil", action: onEdit)
+                        Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .foregroundStyle(.secondary)
+                            .imageScale(.large)
                     }
-                    Button("Edit", systemImage: "pencil", action: onEdit)
-                    Button("Delete", systemImage: "trash", role: .destructive, action: onDelete)
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .foregroundStyle(.secondary)
-                        .imageScale(.large)
+                    .accessibilityLabel("Task options")
                 }
-                .accessibilityLabel("Task options")
-            }
 
-            if !task.notes.isEmpty {
-                Text(task.notes)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(3)
-            }
+                HStack {
+                    Text("Added \(addedDateText)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Image(systemName: task.status.symbolName)
+                        .font(.caption)
+                        .foregroundStyle(task.status.tintColor)
+                }
 
-            syncBadge
+                if !task.notes.isEmpty {
+                    Text(task.notes)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
+                }
+
+                syncBadge
+            }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -54,6 +77,10 @@ struct TaskCardView: View {
         .accessibilityElement(children: .combine)
         .accessibilityAction(named: "Edit", onEdit)
         .accessibilityAction(named: "Delete", onDelete)
+    }
+
+    private var addedDateText: String {
+        task.createdAt.formatted(date: .abbreviated, time: .omitted)
     }
 
     private var syncBadge: some View {
