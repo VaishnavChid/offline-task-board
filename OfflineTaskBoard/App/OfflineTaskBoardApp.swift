@@ -6,12 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct OfflineTaskBoardApp: App {
+    private let dependencies = AppDependencies()
+
     var body: some Scene {
         WindowGroup {
-            Text("Offline Task Board")
+            BoardView(viewModel: dependencies.makeBoardViewModel())
         }
+        .modelContainer(dependencies.modelContainer)
     }
 }
