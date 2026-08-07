@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct BoardView: View {
-    @StateObject private var viewModel: BoardViewModel
+    /// Owned by `RootView`, which created it before the board was ever shown — this view only
+    /// observes it.
+    @ObservedObject var viewModel: BoardViewModel
     @State private var editorTarget: EditorTarget?
     @State private var editMode: EditMode = .inactive
 
@@ -26,10 +28,6 @@ struct BoardView: View {
             case .edit(let task): return task.id.uuidString
             }
         }
-    }
-
-    init(viewModel: BoardViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
     }
 
     var body: some View {
@@ -54,7 +52,9 @@ struct BoardView: View {
             switch target {
             case .create:
                 TaskEditorView(task: nil) { title, notes in
-                    viewModel.createTask(title: title, notes: notes, status: .todo)
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        viewModel.createTask(title: title, notes: notes, status: .todo)
+                    }
                 }
             case .edit(let task):
                 TaskEditorView(task: task) { title, notes in
@@ -66,10 +66,6 @@ struct BoardView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
-        }
-        .task {
-            viewModel.load()
-            await viewModel.syncNow()
         }
     }
 
@@ -83,15 +79,15 @@ struct BoardView: View {
                 TaskCardView(
                     task: task,
                     onEdit: { editorTarget = .edit(task) },
-                    onDelete: { viewModel.deleteTask(task) },
+                    onDelete: { deleteWithAnimation(task) },
                     onMove: { destination in viewModel.moveTask(task, to: destination) },
-                    onAdvanceStatus: { viewModel.advanceStatus(of: task) }
+                    onAdvanceStatus: { withAnimation(.easeInOut(duration: 0.2)) { viewModel.advanceStatus(of: task) } }
                 )
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                 .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) { viewModel.deleteTask(task) } label: {
+                    Button(role: .destructive) { deleteWithAnimation(task) } label: {
                         Label("Delete", systemImage: "trash")
                     }
                     .tint(.red)
@@ -103,7 +99,14 @@ struct BoardView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .animation(.easeInOut(duration: 0.25), value: viewModel.tasks)
         .environment(\.editMode, $editMode)
+    }
+
+    private func deleteWithAnimation(_ task: TaskItem) {
+        withAnimation(.easeInOut(duration: 0.25)) {
+            viewModel.deleteTask(task)
+        }
     }
 
     private var header: some View {
@@ -139,6 +142,7 @@ struct BoardView: View {
             Text(viewModel.syncSummaryMessage)
                 .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
+                .contentTransition(.opacity)
             Spacer(minLength: 8)
             Button("Sync") { Task { await viewModel.syncNow() } }
                 .font(.footnote.weight(.semibold))
@@ -146,6 +150,8 @@ struct BoardView: View {
         }
         .padding(12)
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .animation(.easeInOut(duration: 0.2), value: viewModel.isSyncing)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.syncSummaryMessage)
     }
 
     /// Deliberately outside the sync card — adding a task and checking sync status are unrelated

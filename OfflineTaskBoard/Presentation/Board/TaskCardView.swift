@@ -21,6 +21,8 @@ struct TaskCardView: View {
                     .font(.title2)
                     .foregroundStyle(task.status.tintColor)
                     .frame(width: 28, height: 28)
+                    .contentTransition(.symbolEffect(.replace))
+                    .animation(.easeInOut(duration: 0.2), value: task.status)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Status: \(task.status.title)")
@@ -87,6 +89,8 @@ struct TaskCardView: View {
         Label(syncLabel, systemImage: syncIcon)
             .font(.caption2.weight(.semibold))
             .foregroundStyle(syncTint)
+            .contentTransition(.opacity)
+            .animation(.easeInOut(duration: 0.2), value: task.syncStatus)
     }
 
     private var syncLabel: String {

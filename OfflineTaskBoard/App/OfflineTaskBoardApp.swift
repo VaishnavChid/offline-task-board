@@ -14,7 +14,7 @@ struct OfflineTaskBoardApp: App {
 
     var body: some Scene {
         WindowGroup {
-            BoardView(viewModel: dependencies.makeBoardViewModel())
+            RootView(viewModel: dependencies.makeBoardViewModel())
         }
         .modelContainer(dependencies.modelContainer)
     }
