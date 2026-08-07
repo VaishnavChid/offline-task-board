@@ -112,9 +112,58 @@ final class TaskSyncUseCaseTests: XCTestCase {
         let summary = await useCase.sync()
 
         XCTAssertEqual(summary.conflicted, 1)
+        // The outbox drain runs right after conflict detection in the same sync() call, so a
+        // genuine conflict resolves within this pass rather than waiting for a future one.
+        XCTAssertEqual(summary.uploaded, 1)
         let stored = try repository.allTasks().first
         XCTAssertEqual(stored?.title, "Local edit", "local must win a genuine conflict")
-        XCTAssertEqual(stored?.syncStatus, .conflicted)
+        XCTAssertEqual(stored?.syncStatus, .synced)
+        let saved = await remote.savedTasks
+        XCTAssertEqual(saved.map(\.title), ["Local edit"])
+    }
+
+    /// Regression test for a real bug: `sync()` used to push the outbox *before* pulling, so a
+    /// pending local edit was written to the server with an unconditional `setData` — no
+    /// read-before-write — before anything ever compared it against a concurrent remote change.
+    /// A genuine conflict (both sides changed since the last confirmed sync) was silently
+    /// clobbered rather than detected: this exact scenario, reproduced live against a real
+    /// Firestore project, showed "All changes synced" with no conflict indication at all, and the
+    /// concurrent remote edit vanished without a trace. This test builds local state the way the
+    /// app actually produces it — via a real pending edit, not an artificially-constructed
+    /// `.synced`-with-a-future-timestamp task — so it fails against the old push-first ordering
+    /// and passes now that `sync()` pulls first.
+    func testSyncDetectsConflictWhenLocalHasARealUnsyncedEditAndRemoteAlsoChanged() async throws {
+        let id = UUID()
+        let baseline = Date(timeIntervalSince1970: 5_000)
+        var local = TaskItem(
+            id: id, title: "Original", status: .todo, sortOrder: 0,
+            updatedAt: baseline, syncStatus: .synced, lastSyncedUpdatedAt: baseline
+        )
+        try repository.upsert(local)
+
+        // A real, unsynced local edit — exactly what TaskEditingUseCase produces, not a
+        // hand-constructed conflicted state.
+        local.title = "My local edit"
+        local.updatedAt = baseline.addingTimeInterval(30)
+        local.syncStatus = .pendingUpload
+        try repository.upsert(local)
+
+        // Someone else changed it remotely in the meantime.
+        var remoteVersion = local
+        remoteVersion.title = "Someone else's edit"
+        remoteVersion.updatedAt = baseline.addingTimeInterval(60)
+        remoteVersion.syncStatus = .synced
+        await remote.stubFetch([remoteVersion])
+
+        let summary = await useCase.sync()
+
+        XCTAssertEqual(summary.conflicted, 1)
+        XCTAssertEqual(summary.uploaded, 1)
+        let stored = try repository.allTasks().first
+        XCTAssertEqual(stored?.title, "My local edit", "local must win a genuine conflict")
+        XCTAssertEqual(stored?.syncStatus, .synced)
+        let saved = await remote.savedTasks
+        XCTAssertEqual(saved.map(\.title), ["My local edit"])
     }
 
     func testSyncResolvesConflictOnNextPassByPushingLocal() async throws {

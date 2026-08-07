@@ -30,16 +30,21 @@ final class TaskSyncUseCase {
         self.remote = remote
     }
 
-    /// Drains the local outbox first — so a fetch can never clobber a change the user hasn't
-    /// had acknowledged yet — then pulls remote state and applies the conflict policy.
+    /// Pulls remote state and applies the conflict policy *before* draining the outbox. Pushing
+    /// first would let a pending local edit blindly overwrite the server with an unconditional
+    /// `setData` — with no read-before-write, nothing would ever notice a concurrent remote edit,
+    /// so a genuine conflict could never actually be detected, only silently clobbered. Pulling
+    /// first lets a pending local task be flagged `.conflicted` before it's pushed; the outbox
+    /// drain that follows still pushes it — local still wins immediately, exactly as designed —
+    /// but now the conflict was actually observed, not just overwritten in the dark.
     ///
     /// Each pending task is pushed independently: one task failing must never block the rest of
     /// the outbox from syncing (the bug this replaces let a single failure abort the whole batch).
     @discardableResult
     func sync() async -> SyncSummary {
         var summary = SyncSummary()
-        await drainOutbox(into: &summary)
         await pullRemote(into: &summary)
+        await drainOutbox(into: &summary)
         return summary
     }
 
@@ -81,18 +86,23 @@ final class TaskSyncUseCase {
                 continue
             }
 
-            // A task with unsynced local work waits for the next outbox pass; don't touch it here.
-            guard local.syncStatus == .synced || local.syncStatus == .conflicted else { continue }
+            // A pending delete always wins outright, regardless of what changed remotely in the
+            // meantime — an in-flight deletion shouldn't be resurrected by an incoming edit.
+            guard local.syncStatus != .pendingDelete else { continue }
 
             let baseline = local.lastSyncedUpdatedAt
             let remoteChangedSinceBaseline = baseline.map { remoteTask.updatedAt > $0 } ?? (remoteTask.updatedAt > local.updatedAt)
             guard remoteChangedSinceBaseline else { continue }
 
-            let localChangedSinceBaseline = baseline.map { local.updatedAt > $0 } ?? false
+            // Local counts as "changed since baseline" either because its own timestamp has
+            // moved past the last confirmed sync, or — the common real case — because it simply
+            // has unsynced local work right now (`.pendingUpload`/`.failed`/already `.conflicted`).
+            let localChangedSinceBaseline = local.syncStatus != .synced || (baseline.map { local.updatedAt > $0 } ?? false)
             if localChangedSinceBaseline {
                 // Both sides changed since the last confirmed sync: a genuine conflict. Local
-                // wins and gets queued (via `.conflicted`, which counts as pending) to overwrite
-                // the server on the next pass — but the UI can show the user that happened.
+                // wins and gets queued (via `.conflicted`, which counts as pending) — the outbox
+                // drain right after this pushes it, so the conflict resolves within this same
+                // sync pass, not a future one — but the UI can still show the user it happened.
                 var conflicted = local
                 conflicted.syncStatus = .conflicted
                 try? repository.upsert(conflicted)
