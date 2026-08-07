@@ -142,7 +142,6 @@ Open `OfflineTaskBoard.xcodeproj` in Xcode, select an iOS 26 simulator, and run.
 - Undo for delete (the tombstone pattern already in place makes this cheap to add — it just wasn't reached).
 - A lightweight debug/dev mode for simulating offline conditions and sync failures on demand.
 - A toast naming which task a sync conflict was resolved for. Right now that's only reflected in the sync bar's one-line summary ("resolved 1 conflict in your favor") — real, but easy to miss and doesn't say which task.
-- A more deliberate first-launch/empty-state experience.
 - Background sync via `BGTaskScheduler`.
 - Retry backoff for repeatedly-failing syncs (currently a failed task just waits for the next manual sync, with no escalating delay).
 - Authentication and per-user data.

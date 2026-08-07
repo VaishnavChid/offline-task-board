@@ -103,7 +103,9 @@ struct BoardView: View {
     /// (advances the workflow) and the small badge on its second line, not by position.
     private var taskList: some View {
         List {
-            if displayedTasks.isEmpty && !searchText.isEmpty {
+            if displayedTasks.isEmpty && searchText.isEmpty {
+                emptyStateView
+            } else if displayedTasks.isEmpty {
                 Text("No tasks match \u{201C}\(searchText)\u{201D}")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -154,6 +156,43 @@ struct BoardView: View {
         // even while editing, deleting, or reordering a task. `simultaneousGesture` lets this
         // fire alongside whatever the tapped row/button already does, rather than intercepting it.
         .simultaneousGesture(TapGesture().onEnded { isSearchFocused = false })
+    }
+
+    /// Shown only when the board has genuinely no tasks — not the "no search results" case,
+    /// which has its own message right next to this in `taskList`. The status legend answers
+    /// "what does each status look like" at a glance without the cost of a full mocked-up
+    /// `TaskCardView` for each one — same icon/tint every real card already uses.
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "checklist")
+                .font(.system(size: 40))
+                .foregroundStyle(.indigo)
+            VStack(spacing: 4) {
+                Text("No tasks yet")
+                    .font(.headline)
+                Text("Tap the + button above to add your first task")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            HStack(spacing: 28) {
+                ForEach(TaskStatus.allCases) { status in
+                    VStack(spacing: 6) {
+                        Image(systemName: status.symbolName)
+                            .font(.title3)
+                            .foregroundStyle(status.tintColor)
+                        Text(status.title)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 56)
+        .padding(.horizontal, 32)
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
     }
 
     /// Search-filtered, then a stable partition that sinks `.done` tasks to the bottom without
